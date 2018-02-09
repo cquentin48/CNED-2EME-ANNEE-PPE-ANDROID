@@ -27,9 +27,12 @@ public class NuiActivity extends AppCompatActivity {
     private Integer mois ;
     private Integer qte ;
 
+    private Global controle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        controle.getInstance(this);
         setContentView(R.layout.activity_nui);
         setTitle("GSB : Frais ETP");
         // modification de l'affichage du DatePicker
@@ -70,8 +73,8 @@ public class NuiActivity extends AppCompatActivity {
         // récupération de la qte correspondant au mois actuel
         qte = 0 ;
         Integer key = annee*100+mois ;
-        if (Global.listFraisMois.containsKey(key)) {
-            qte = Global.listFraisMois.get(key).getEtp() ;
+        if (Global.listeFraisMois.containsKey(key)) {
+            qte = Global.listeFraisMois.get(key).getEtp() ;
         }
         ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
     }
@@ -93,7 +96,7 @@ public class NuiActivity extends AppCompatActivity {
     private void cmdValider_clic() {
         findViewById(R.id.cmdEtpValider).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Serializer.serialize(Global.listFraisMois, NuiActivity.this) ;
+                Serializer.serialize(Global.listeFraisMois, NuiActivity.this) ;
                 retourActivityPrincipale() ;
             }
         }) ;
@@ -144,11 +147,12 @@ public class NuiActivity extends AppCompatActivity {
         ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
         // enregistrement dans la liste
         Integer key = annee*100+mois ;
-        if (!Global.listFraisMois.containsKey(key)) {
+        if (!Global.listeFraisMois.containsKey(key)) {
             // creation du mois et de l'annee s'ils n'existent pas déjà
-            Global.listFraisMois.put(key, new FraisMois(annee, mois)) ;
+            Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
         }
-        Global.listFraisMois.get(key).setEtp(qte) ;
+        Global.listeFraisMois.get(key).setEtp(qte) ;
+        controle.mySQLSetFraisForfaitisee(annee.toString()+mois.toString(),"NUI",controle.getCompte().getUserId(),qte);
     }
 
     /**

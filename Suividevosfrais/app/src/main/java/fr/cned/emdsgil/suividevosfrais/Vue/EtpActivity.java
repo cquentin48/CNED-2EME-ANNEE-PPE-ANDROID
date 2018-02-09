@@ -22,6 +22,8 @@ import fr.cned.emdsgil.suividevosfrais.Modele.FraisMois;
 
 public class EtpActivity extends AppCompatActivity {
 
+    private Global controle;
+
     // informations affichées dans l'activité
     private Integer annee ;
     private Integer mois ;
@@ -30,6 +32,7 @@ public class EtpActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        controle.getInstance(this);
         setContentView(R.layout.activity_etp);
         setTitle("GSB : Frais Etp");
         // modification de l'affichage du DatePicker
@@ -70,8 +73,8 @@ public class EtpActivity extends AppCompatActivity {
         // récupération de la qte correspondant au mois actuel
         qte = 0 ;
         Integer key = annee*100+mois ;
-        if (Global.listFraisMois.containsKey(key)) {
-            qte = Global.listFraisMois.get(key).getEtp() ;
+        if (Global.listeFraisMois.containsKey(key)) {
+            qte = Global.listeFraisMois.get(key).getEtp() ;
         }
         ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
     }
@@ -93,7 +96,7 @@ public class EtpActivity extends AppCompatActivity {
     private void cmdValider_clic() {
         findViewById(R.id.cmdEtpValider).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Serializer.serialize(Global.listFraisMois, EtpActivity.this) ;
+                Serializer.serialize(Global.listeFraisMois, EtpActivity.this) ;
                 //Maj base de données
                 retourActivityPrincipale() ;
             }
@@ -145,11 +148,12 @@ public class EtpActivity extends AppCompatActivity {
         ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
         // enregistrement dans la liste
         Integer key = annee*100+mois ;
-        if (!Global.listFraisMois.containsKey(key)) {
+        if (!Global.listeFraisMois.containsKey(key)) {
             // creation du mois et de l'annee s'ils n'existent pas déjà
-            Global.listFraisMois.put(key, new FraisMois(annee, mois)) ;
+            Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
         }
-        Global.listFraisMois.get(key).setEtp(qte) ;
+        Global.listeFraisMois.get(key).setEtp(qte);
+        controle.mySQLSetFraisForfaitisee(annee.toString()+mois.toString(),"ETP",controle.getCompte().getUserId(),qte);
     }
 
     /**

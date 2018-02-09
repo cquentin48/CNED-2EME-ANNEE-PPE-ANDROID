@@ -12,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Vue.MainActivity">
+        <activity android:name=".Vue.ConnexionActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -32,7 +32,7 @@
         <activity android:name=".Vue.NuiActivity" />
         <activity android:name=".Vue.EtpActivity" />
         <activity android:name=".Vue.RepActivity" />
-        <activity android:name=".Vue.ConnexionActivity"></activity>
+        <activity android:name=".Vue.MainActivity"></activity>
     </application>
 
 </manifest>

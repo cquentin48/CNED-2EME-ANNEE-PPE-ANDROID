@@ -21,12 +21,14 @@ import fr.cned.emdsgil.suividevosfrais.Outils.Serializer;
 import fr.cned.emdsgil.suividevosfrais.R;
 
 public class HfActivity extends AppCompatActivity {
+	private Global controle;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_hf);
         setTitle("GSB : Frais HF");
+		controle.getInstance(this);
         // modification de l'affichage du DatePicker
         Global.changeAfficheDate((DatePicker) findViewById(R.id.datHf), true) ;
 		// mise à 0 du montant
@@ -69,17 +71,29 @@ public class HfActivity extends AppCompatActivity {
     private void cmdAjouter_clic() {
     	findViewById(R.id.cmdHfAjouter).setOnClickListener(new Button.OnClickListener() {
     		public void onClick(View v) {
-				AccesDistant accesDistant = new AccesDistant();
-    			enregListe() ;
-    			Serializer.serialize(Global.listFraisMois, HfActivity.this) ;
+				Integer annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
+				Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
+				Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
+				Integer key = annee*100+mois ;
+
+				EditText libelleEditText = (EditText)findViewById(R.id.txtHfMotif);
+				EditText montantEditText =  (EditText)findViewById(R.id.txtHf);
+
+
+				enregListe() ;
+    			Serializer.serialize(Global.listeFraisMois, HfActivity.this) ;
     			retourActivityPrincipale() ;
-				HashMap<Integer, Object> updateData = new HashMap<>();
-				EditText libelle = (EditText)findViewById(R.id.txtHfMotif);
-				String text = libelle.getText().toString();
-				int montantFraisHf = Integer.parseInt(((EditText)findViewById(R.id.txtHf)).getText().toString());
-				updateData.put(0, text);
-				updateData.put(1, montantFraisHf);
-				accesDistant.writeToMysql(updateData, "majFraisHorsForfait");
+
+				//Récupération des entité du frais
+				int id = Global.listeFraisMois.get(key).getLesFraisHf().size()+1;
+				String creationDate = annee.toString()+mois.toString();
+				String idVisiteur = controle.getCompte().getUserId();
+				String libelle = libelleEditText.getText().toString();
+				String date = annee.toString()+"-"+mois.toString()+"-"+jour.toString();
+				String montant = montantEditText.getText().toString();
+
+				//Requête SQL pour la maj des données
+				controle.mySQLSetFraisHorsForfait(id, creationDate, idVisiteur, libelle, date, montant);
 			}
     	}) ;    	
     }
@@ -92,15 +106,16 @@ public class HfActivity extends AppCompatActivity {
 		Integer annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
 		Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
 		Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
+		Integer idFrais = 0;
 		Float montant = Float.valueOf((((EditText)findViewById(R.id.txtHf)).getText().toString()));
 		String motif = ((EditText)findViewById(R.id.txtHfMotif)).getText().toString() ;
 		// enregistrement dans la liste
 		Integer key = annee*100+mois ;
-		if (!Global.listFraisMois.containsKey(key)) {
+		if (!Global.listeFraisMois.containsKey(key)) {
 			// creation du mois et de l'annee s'ils n'existent pas déjà
-			Global.listFraisMois.put(key, new FraisMois(annee, mois)) ;
+			Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
 		}
-		Global.listFraisMois.get(key).addFraisHf(montant, motif, jour) ;		
+		Global.listeFraisMois.get(key).addFraisHf(montant, motif, jour, idFrais) ;
 	}
 
 	/**

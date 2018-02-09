@@ -42,6 +42,7 @@ public class AccesHTTP extends AsyncTask<String, Integer, Long> {
             paramCnx.setEntity(new UrlEncodedFormEntity(parametres));
             HttpResponse reponse = cnxHttp.execute(paramCnx);
             ret = EntityUtils.toString(reponse.getEntity());
+            System.out.println(reponse.getEntity().toString());
 
         } catch (ClientProtocolException e) {
             Log.d("Erreur ClientProtocol", e.toString()) ;
@@ -59,4 +60,3 @@ public class AccesHTTP extends AsyncTask<String, Integer, Long> {
     }
 
 }
-

@@ -30,9 +30,9 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:background="@null"
+                android:contentDescription="@string/icone_frais_km"
                 android:scaleType="fitCenter"
-                android:src="@drawable/frais_km"
-                android:contentDescription="@string/icone_frais_km"/>
+                android:src="@drawable/frais_km" />
 
         </LinearLayout>
 

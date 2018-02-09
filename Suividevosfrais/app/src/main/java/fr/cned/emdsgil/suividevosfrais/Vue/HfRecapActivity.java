@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import fr.cned.emdsgil.suividevosfrais.Modele.FraisHf;
 import fr.cned.emdsgil.suividevosfrais.Controleur.Global;
@@ -20,9 +21,12 @@ import fr.cned.emdsgil.suividevosfrais.R;
 
 public class HfRecapActivity extends AppCompatActivity {
 
+	private Global global;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this.global = Global.getInstance(this);
 		setContentView(R.layout.activity_hf_recap);
         setTitle("GSB : Récap Frais HF");
 		// modification de l'affichage du DatePicker
@@ -58,11 +62,11 @@ public class HfRecapActivity extends AppCompatActivity {
 		Integer mois = ((DatePicker)findViewById(R.id.datHfRecap)).getMonth() + 1 ;
 		// récupération des frais HF pour cette date
 		Integer key = annee*100 + mois ;
-		ArrayList<FraisHf> liste;
-		if (Global.listFraisMois.containsKey(key)) {
-			liste = Global.listFraisMois.get(key).getLesFraisHf() ;
+		Hashtable<Integer, FraisHf> liste;
+		if (Global.listeFraisMois.containsKey(key)) {
+			liste = Global.listeFraisMois.get(key).getLesFraisHf() ;
 		}else{
-			liste = new ArrayList<>() ;
+			liste = new Hashtable<>() ;
 			/* Retrait du type de l'ArrayList (Optimisation Android Studio)
 			 * Original : Typage explicit =
 			 * liste = new ArrayList<FraisHf>() ;

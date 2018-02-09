@@ -7,5 +7,5 @@ import java.util.HashMap;
  */
 
 public interface AsyncResponse {
-    HashMap<Object, Object> processFinish(String output);
+    void processFinish(String output);
 }

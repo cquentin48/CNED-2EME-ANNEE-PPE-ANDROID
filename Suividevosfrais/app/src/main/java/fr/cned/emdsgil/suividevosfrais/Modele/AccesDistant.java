@@ -3,116 +3,182 @@ package fr.cned.emdsgil.suividevosfrais.Modele;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Date;
+import java.util.Hashtable;
 
 import fr.cned.emdsgil.suividevosfrais.Controleur.Global;
 import fr.cned.emdsgil.suividevosfrais.Outils.AccesHTTP;
 import fr.cned.emdsgil.suividevosfrais.Outils.AsyncResponse;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import fr.cned.emdsgil.suividevosfrais.Outils.Outils;
 
 /**
- * Created by Caesar01 on 12/01/2018.
+ * Created by emds on 12/01/2017.
  */
 
 public class AccesDistant implements AsyncResponse {
-    //Adresse du script de maj mysql
-    public final static String SERVADRESS = "http://192.168.1.20/android-suivifrais/mysqlHandling.php";
-    public Global global;
 
+    // constante
+    private static final String SERVERADDR = "http://192.168.56.1/android-suivifrais/mysqlHandling.php";
+    private Global controle ;
+
+    /**
+     * Constructeur
+     */
     public AccesDistant(){
-        global = Global.getInstance(null);
+        controle = Global.getInstance(null);
     }
 
-    @Override
+
     /**
-     * Traitement des données en provenance du serveur distant
-     * @param output Contenu du retour du serveur
+     * Traitement des informations qui viennent du serveur distant
+     * @param output le retour de l'opération PHP par le serveur SQL
      */
-    public HashMap<Object, Object> processFinish(String output){
-        Log.d("serveur", output+"\n");
+    @Override
+    public void processFinish(String output) {
+        // contenu du retour du serveur, pour contrôle dans la console
+        Log.d("serveur", "************" + output+"\n");
+
+        // découpage du message reçu
         String[] message = output.split("%");
-        HashMap<Object, Object> outputData = new HashMap<>();
+
+        // contrôle si le serveur a retourné une information
         if(message.length>1){
-            if(message[1] == "succes"){
-                Log.d("Serveur",message[1].toString());
-                try{
-                    JSONArray connectionReturnArray = new JSONArray(message[2]);
-                    switch(message[0]){
-                        //Cas de connection
-                        case "connection":
-                            JSONObject connectionReturn = new JSONObject(""+connectionReturnArray.get(2));
-                            String username = connectionReturn.getString("login");
-                            String pwd = connectionReturn.getString("mpd");
-                            Boolean comptable = connectionReturn.getBoolean("comptable");
-                            int id = connectionReturn.getInt("id");
-                            Compte account = new Compte(username, pwd, comptable, id);
-                            global.setCompte(account);
-                        break;
+            if(message[1].equals("connection")){
+                // retour suite à un enregistrement distant d'un profil
+                Log.d("retour", "************enreg="+message[1]);
+                if (message[2].equals("succes")) {
+                    try {
+                        //Objet JSON pour le retour de l'opération SQL de connection
+                        JSONObject returnArrayInfo = new JSONObject(message[4]);
 
-                        case "chargementFrais":
-                            HashMap<String, FraisMois> fraisMoisTab = new HashMap<>();
-                            JSONArray fraisMoisArray = new JSONArray(""+connectionReturnArray.get(2));
+                        //Déclaration et initialisation des variables pour le compte
+                        String username = returnArrayInfo.getString("login");
+                        Boolean comptable = (returnArrayInfo.getInt("comptable")==1)?true:false;
+                        String id = returnArrayInfo.getString("id");
+                        Compte account = new Compte(username, comptable, id);
 
-                            for(int i = 0;i<fraisMoisArray.length();i+=4){
-                                JSONObject uneFiche = new JSONObject(""+fraisMoisArray.get(0));
-                                int annee = Integer.parseInt(uneFiche.getString("mois").substring(0,3));
-                                int mois = Integer.parseInt(uneFiche.getString("mois").substring(4,5));
-                                FraisMois fraisMois = new FraisMois(annee, mois);
-                                int nuitee = new JSONObject(""+fraisMoisArray.get(i)).getInt("quantite");
-                                int repas = new JSONObject(""+fraisMoisArray.get(i+1)).getInt("quantite");
-                                int km = new JSONObject(""+fraisMoisArray.get(i+2)).getInt("quantite");
-                                int etape = new JSONObject(""+fraisMoisArray.get(i+3)).getInt("quantite");
-                                fraisMois.setEtape(etape);
-                                fraisMois.setNuitee(nuitee);
-                                fraisMois.setEtp(km);
-                                fraisMois.setRepas(repas);
-                                fraisMoisTab.put("fraisMois",fraisMois);
-                            }
-                        break;
+                        //Initialisation du compte dans le contrôleur
+                        controle.setCompte(account);
+                    }catch(JSONException e){
+                        e.printStackTrace();
                     }
-                }catch (JSONException e){
+                }
+            }else if(message[0].equals("chargementFrais")){
+                // retour suite à la récupération du dernier profil
+                Log.d("retour du serveur", "Chargement des fiches frais pour l'utilisateur "+controle.getCompte().getUsername());
+                try {
+                    //Récupération du tableau des fiches de frais
+                    JSONArray ficheMoisJSONArray = new JSONArray(message[4]);
+
+                    //Variables métier
+                    Hashtable<Integer, FraisMois> listeFicheFrais = new Hashtable<>();
+
+                    //Récupération des informations de la fiche
+                    for(int i = 0;i<ficheMoisJSONArray.length();i++){
+
+                        //Déclaration des variables pour l'initialisations des fiches de frais
+                        JSONArray ficheMoisArray = new JSONArray(ficheMoisJSONArray.get(i));
+                        JSONObject infoFiche = new JSONObject(ficheMoisJSONArray.get(0)+"");
+                        JSONArray fraisForfaitisesJSONArray = new JSONArray(ficheMoisArray.get(1)+"");
+                        JSONArray fraisHorsForfaitsJSONArray = new JSONArray(ficheMoisArray.get(2)+"");
+
+                        //Variables métiers
+                        FraisMois unMois;
+                        ArrayList<FraisHf> listeFraisHF = new ArrayList<>();
+
+                        //On extrait le mois et on le converti au format digital
+                        int mois = Outils.convertMonthToDigital(infoFiche.getString("mois"));
+                        int annee = Outils.convertYearToDigital(infoFiche.getString("mois"));
+
+                        //Initialisation du mois
+                        unMois = new FraisMois(annee, mois);
+
+                        //Parcours de la table JSON des frais Forfaitisés
+                        for(int j = 0;j<fraisForfaitisesJSONArray.length();j++){
+                            //Déclaration de l'objet JSON
+                            JSONObject unFraisForfaitisee = new JSONObject(fraisForfaitisesJSONArray.get(j)+"");
+
+                            //Déclaration des entités du frais forfaitisé : libellé et quantité
+                            String libelle = unFraisForfaitisee.getString("idfraisforfait");
+                            int quantite = unFraisForfaitisee.getInt("quantite");
+
+                            switch(libelle){
+                                //Etape
+                                case "ETP":
+                                    unMois.setEtape(quantite);
+                                    break;
+                                //Kilométrage
+                                case "KM":
+                                    unMois.setEtp(quantite);
+                                    break;
+                                //Nuitée
+                                case "NUI":
+                                    unMois.setNuitee(quantite);
+                                    break;
+                                //Repas
+                                case "REP":
+                                    unMois.setRepas(quantite);
+                                    break;
+                            }
+
+                        }
+
+                        //Parcours de la table JSON pour implémenter les frais hors-forfait
+                        for(int j = 0;j<ficheMoisJSONArray.length();j++){
+                            //Création de l'objet JSON pour la récupération du frais Hors-Forfait à l'indice j
+                            JSONObject unFraisJSON = new JSONObject(fraisHorsForfaitsJSONArray.get(j)+"");
+
+                            //Récupération des données de l'objet JSON se situant à l'indice j
+                            String libelle = unFraisJSON.getString("libelle");
+                            float montant = unFraisJSON.getLong("montant");
+                            int jour = unFraisJSON.getInt("jour");
+                            int key = unFraisJSON.getInt("id");
+
+                            //Ajout du frais dans la liste
+                            listeFicheFrais.get(i).addFraisHf(montant,libelle,jour,j);
+                        }
+
+                    }
+
+                    //On met à jour la liste des fiches de frais
+                    controle.setListeFraisMois(listeFicheFrais);
+
+                  //En cas de problème
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            }else{
-                //En cas d'erreur, on l'affiche
-                Log.d("Serveur", message[1].toString());
+                //Cas d'opération de mise à jour d'insertion ou de suppression de frais forfaitisés/hors-forfait
+            }else if(message[0].equals("deleteFraisHF") || message[0].equals("mySQLDeleteFraisForfaitisee") || message[0].equals("mySQLSetFraisForfaitisee")){
+                for(int i = 2; i<message.length; i++){
+                    Log.d("Opération Serveur MYSQL",message[i]);
+                }
+            }
+
+            else if(message[0].equals("Erreur !")){
+                // retour suite à une erreur
+                Log.d("retour", "************erreur="+message[1]);
             }
         }
-        return outputData;
-    }
-
-    public void writeToMysql(HashMap<Integer, Object> updateData, String operationType){
-        AccesDistant ecriture = new AccesDistant();
-        List liste = new ArrayList();
-
-        for(int i = 0; i<updateData.size(); i++){
-            liste.add(i,updateData.get(i));
-        }
-
-        JSONArray tab = new JSONArray(liste);
-        ecriture.envoi(operationType, tab);
     }
 
     /**
-     * Envoi de données vers le serveur distant
-     * @param operation le type d'opération réalisé
-     * @param mysqlDonneesJSON les données pour la réalisation de l'opération Mysql
+     * Envoi d'informations vers le serveur distant
+     * @param operation
+     * @param lesDonneesJSON
      */
-    public void envoi(String operation, JSONArray mysqlDonneesJSON) {
-        AccesHTTP accesHTTP = new AccesHTTP();
-
-        //On envoi le type d'opération par la méthode POST
-        accesHTTP.addParam("operation", operation);
-
-        //On envoi les données au format JSON dans le format post
-        accesHTTP.addParam("donneesMysql", mysqlDonneesJSON.toString());
-
-        //Execution de la requête SQL
-        accesHTTP.execute(SERVADRESS);
+    public void envoi(String operation, JSONArray lesDonneesJSON){
+        AccesHTTP accesDonnees = new AccesHTTP();
+        // permet de faire le lien asynchrone avec AccesHTTP
+        accesDonnees.delegate = this;
+        // paramètres POST pour l'envoi vers le serveur distant
+        accesDonnees.addParam("operation", operation);
+        accesDonnees.addParam("lesdonnees", lesDonneesJSON.toString());
+        // appel du serveur
+        accesDonnees.execute(SERVERADDR);
     }
 }

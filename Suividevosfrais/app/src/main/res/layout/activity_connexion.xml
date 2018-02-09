@@ -65,7 +65,7 @@
                     android:id="@+id/textView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="1.89"
                     android:text="Pseudo :"
                     android:textAlignment="textEnd" />
 
@@ -75,8 +75,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ems="10"
-                    android:inputType="textPersonName"
-                    android:text="Name" />
+                    android:inputType="text" />
 
             </LinearLayout>
 
@@ -98,10 +97,10 @@
                     android:id="@+id/passwordEditText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2.58"
+                    android:layout_weight="1"
                     android:ems="10"
-                    android:inputType="textPersonName"
-                    android:text="Name" />
+                    android:inputType="textPassword" />
+
             </LinearLayout>
 
             <LinearLayout

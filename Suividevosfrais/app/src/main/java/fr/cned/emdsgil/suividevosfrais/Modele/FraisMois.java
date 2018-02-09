@@ -2,6 +2,7 @@ package fr.cned.emdsgil.suividevosfrais.Modele;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * Classe métier contenant les informations des frais d'un mois
@@ -14,7 +15,7 @@ public class FraisMois implements Serializable {
     private Integer km; // nombre de km du mois
     private Integer nuitee; // nombre de nuitées du mois
     private Integer repas; // nombre de repas du mois
-    private final ArrayList<FraisHf> lesFraisHf; // liste des frais hors forfait du mois
+    private final Hashtable<Integer, FraisHf> lesFraisHf; // liste des frais hors forfait du mois
 
     public FraisMois(Integer annee, Integer mois) {
         this.annee = annee;
@@ -23,7 +24,7 @@ public class FraisMois implements Serializable {
         this.km = 0;
         this.nuitee = 0;
         this.repas = 0;
-        lesFraisHf = new ArrayList<>();
+        lesFraisHf = new Hashtable<>();
     }
 
     /**
@@ -32,8 +33,8 @@ public class FraisMois implements Serializable {
      * @param montant Montant en euros du frais hors forfait
      * @param motif Justification du frais hors forfait
      */
-    public void addFraisHf(Float montant, String motif, Integer jour) {
-        lesFraisHf.add(new FraisHf(montant, motif, jour));
+    public void addFraisHf(Float montant, String motif, Integer jour, Integer key) {
+        lesFraisHf.put(key,new FraisHf(montant, motif, jour));
     }
 
     /**
@@ -91,7 +92,7 @@ public class FraisMois implements Serializable {
         this.repas = repas;
     }
 
-    public ArrayList<FraisHf> getLesFraisHf() {
+    public Hashtable<Integer, FraisHf> getLesFraisHf() {
         return lesFraisHf;
     }
 

@@ -98,7 +98,6 @@
                 android:width="100dp"
                 android:inputType="number"
                 android:gravity="end|center_vertical"
-                android:focusableInTouchMode="false"
                 android:text="0">
             </EditText>
 

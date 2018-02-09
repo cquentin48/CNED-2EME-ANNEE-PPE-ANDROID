@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Locale;
 
 import fr.cned.emdsgil.suividevosfrais.Controleur.Global;
@@ -17,7 +18,7 @@ import fr.cned.emdsgil.suividevosfrais.R;
 
 public class FraisHfAdapter extends BaseAdapter {
 
-	private final ArrayList<FraisHf> lesFrais ; // liste des frais du mois
+	private final Hashtable<Integer, FraisHf> lesFrais ; // liste des frais du mois
 	private final LayoutInflater inflater ;
 
     /**
@@ -25,7 +26,7 @@ public class FraisHfAdapter extends BaseAdapter {
      * @param context Accès au contexte de l'application
      * @param lesFrais Liste des frais hors forfait
      */
-	public FraisHfAdapter(Context context, ArrayList<FraisHf> lesFrais) {
+	public FraisHfAdapter(Context context, Hashtable<Integer, FraisHf> lesFrais) {
 		inflater = LayoutInflater.from(context) ;
 		this.lesFrais = lesFrais ;
     }

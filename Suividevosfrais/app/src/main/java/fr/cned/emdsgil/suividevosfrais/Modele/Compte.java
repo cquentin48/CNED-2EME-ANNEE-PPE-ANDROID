@@ -7,9 +7,8 @@ package fr.cned.emdsgil.suividevosfrais.Modele;
 public class Compte {
     private String username;
 
-    private String password;
     private boolean isComptable;
-    private int userId;
+    private String userId;
 
     public String getUsername() {
         return username;
@@ -19,18 +18,21 @@ public class Compte {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public boolean isComptable() { return isComptable; }
 
-    public int getUserId() { return userId; }
+    public String getUserId() { return userId; }
 
-    public Compte(String username, String password, boolean isComptable, int userId){
+    public Compte(String username, boolean isComptable, String userId){
         this.username = username;
-        this.password = password;
         this.isComptable = isComptable;
+        this.userId = userId;
+    }
+
+    public void setComptable(boolean comptable) {
+        isComptable = comptable;
+    }
+
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 }
