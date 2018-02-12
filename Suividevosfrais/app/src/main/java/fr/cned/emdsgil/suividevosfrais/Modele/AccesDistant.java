@@ -68,28 +68,38 @@ public class AccesDistant implements AsyncResponse {
                         e.printStackTrace();
                     }
                 }
-            }else if(message[0].equals("chargementFrais")){
+            }else if(message[1].equals("chargementFrais")){
                 // retour suite à la récupération du dernier profil
                 Log.d("retour du serveur", "Chargement des fiches frais pour l'utilisateur "+controle.getCompte().getUsername());
                 try {
                     //Récupération du tableau des fiches de frais
-                    JSONArray ficheMoisJSONArray = new JSONArray(message[4]);
+                    JSONArray fichesMoisJSONArray = new JSONArray(message[4]);
 
                     //Variables métier
                     Hashtable<Integer, FraisMois> listeFicheFrais = new Hashtable<>();
 
                     //Récupération des informations de la fiche
-                    for(int i = 0;i<ficheMoisJSONArray.length();i++){
+                    for(int i = 0;i<fichesMoisJSONArray.length();i++){
 
                         //Déclaration des variables pour l'initialisations des fiches de frais
-                        JSONArray ficheMoisArray = new JSONArray(ficheMoisJSONArray.get(i));
-                        JSONObject infoFiche = new JSONObject(ficheMoisJSONArray.get(0)+"");
-                        JSONArray fraisForfaitisesJSONArray = new JSONArray(ficheMoisArray.get(1)+"");
-                        JSONArray fraisHorsForfaitsJSONArray = new JSONArray(ficheMoisArray.get(2)+"");
+                            //Info Fiche => Mois
+                        JSONObject ficheMoisJSONObject = new JSONObject(fichesMoisJSONArray.get(0)+"");
+                        System.out.println(ficheMoisJSONObject.toString());
+                        JSONArray ficheMoisJSONArray = new JSONArray(ficheMoisJSONObject.toString());
+                        Log.d("Fiche Mois Array", ficheMoisJSONArray.toString());
+                        /*JSONObject infoFiche = new JSONObject(fichesMoisJSONArray.get(0)+"");
+                        JSONArray infoFicheMoisJSONArray = new JSONArray(infoFiche.toString());
+                        Log.d("Info fiche Mois",infoFicheMoisJSONArray.toString());
+                            //fraisForfaitisesJSONArray => Liste des frais Forfaitisés
+                        JSONArray fraisForfaitisesJSONArray = new JSONArray(fichesMoisJSONArray.get(1)+"");
+                        //Log.d("Frais forfaitisés",fraisForfaitisesJSONArray.toString());
+                            //fraisHorsForfaitsJSONArray => Liste des frais Hors-Forfait
+                        JSONArray fraisHorsForfaitsJSONArray = new JSONArray(fichesMoisJSONArray.get(2)+"");
+                        //Log.d("Frais Hors-Forfait",fraisHorsForfaitsJSONArray.toString());
 
                         //Variables métiers
+                            //Objet métier pour la liste des frais du mois
                         FraisMois unMois;
-                        ArrayList<FraisHf> listeFraisHF = new ArrayList<>();
 
                         //On extrait le mois et on le converti au format digital
                         int mois = Outils.convertMonthToDigital(infoFiche.getString("mois"));
@@ -129,7 +139,7 @@ public class AccesDistant implements AsyncResponse {
                         }
 
                         //Parcours de la table JSON pour implémenter les frais hors-forfait
-                        for(int j = 0;j<ficheMoisJSONArray.length();j++){
+                        for(int j = 0;j<fichesMoisJSONArray.length();j++){
                             //Création de l'objet JSON pour la récupération du frais Hors-Forfait à l'indice j
                             JSONObject unFraisJSON = new JSONObject(fraisHorsForfaitsJSONArray.get(j)+"");
 
@@ -142,7 +152,7 @@ public class AccesDistant implements AsyncResponse {
                             //Ajout du frais dans la liste
                             listeFicheFrais.get(i).addFraisHf(montant,libelle,jour,j);
                         }
-
+*/
                     }
 
                     //On met à jour la liste des fiches de frais

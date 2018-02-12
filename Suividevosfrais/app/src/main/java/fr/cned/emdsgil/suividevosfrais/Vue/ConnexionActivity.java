@@ -23,9 +23,9 @@ public class ConnexionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.setContext();
         this.setTitle(this.getTitle()+" - Connexion");
-        this.controle = Global.getInstance(null);
+        this.controle = Global.getInstance(this);
         setContentView(R.layout.activity_connexion);
-        //this.btnConnexion();
+        this.btnConnexion();
     }
 
     /**

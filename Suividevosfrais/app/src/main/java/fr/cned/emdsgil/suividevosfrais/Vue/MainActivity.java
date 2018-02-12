@@ -3,6 +3,7 @@ package fr.cned.emdsgil.suividevosfrais.Vue;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -39,6 +40,19 @@ public class MainActivity extends AppCompatActivity {
 
         //Chargement des frais de l'utilisateur
         controle.chargementFrais(controle.getCompte().getUserId());
+        for(int i = 0;i<controle.getListeFraisMois().size();i++){
+            Log.d("Liste Frais Forfaitisé", "Frais n°"+i);
+            Log.d("année",controle.getListeFraisMois().get(i).getAnnee().toString());
+            Log.d("étape",controle.getListeFraisMois().get(i).getEtape().toString());
+            Log.d("Frais Kilométrique",controle.getListeFraisMois().get(i).getEtp().toString());
+            Log.d("Nuitée",controle.getListeFraisMois().get(i).getNuitee().toString());
+            for(int j = 0;j<controle.getListeFraisMois().size();j++){
+                Log.d("Frais Hors-Forfait :","Liste frais hors-forfait du mois"+controle.getListeFraisMois().get(i).getMois().toString());
+                Log.d("Motif",controle.getListeFraisMois().get(i).getLesFraisHf().get(j).getMotif());
+                Log.d("Montant",controle.getListeFraisMois().get(i).getLesFraisHf().get(j).getMontant().toString());
+            }
+            System.out.println("Fin de l'affichage");
+        }
     }
 
     @Override
