@@ -28,15 +28,6 @@ public class MainActivity extends AppCompatActivity {
         setTitle("GSB : Suivi des frais");
         // récupération des informations sérialisées
         //recupSerialize();
-        // chargement des méthodes événementielles
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdKm)), KmActivity.class);
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdHf)), HfActivity.class);
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdNuitee)), NuiActivity.class);
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdEtape)), EtpActivity.class);
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdRepas)), RepActivity.class);
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdNuitee)), NuiActivity.class);
-        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdHfRecap)), HfRecapActivity.class);
-        cmdTransfert_clic();
 
         //Chargement des frais de l'utilisateur
         controle.chargementFrais(controle.getCompte().getUserId());
@@ -53,6 +44,16 @@ public class MainActivity extends AppCompatActivity {
             }
             System.out.println("Fin de l'affichage");
         }
+
+        // chargement des méthodes événementielles
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdKm)), KmActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdHf)), HfActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdNuitee)), NuiActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdEtape)), EtpActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdRepas)), RepActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdNuitee)), NuiActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdHfRecap)), HfRecapActivity.class);
+        cmdTransfert_clic();
     }
 
     @Override

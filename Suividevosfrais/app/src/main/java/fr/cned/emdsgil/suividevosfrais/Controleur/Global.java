@@ -46,6 +46,15 @@ public final class Global{
         return Global.instance ;
     }
 
+    /**
+     * Ajoute une fiche de frais à la liste
+     * @param uneFiche la liste à ajouter
+     * @param key l'index de la fiche
+     */
+    public static void addFicheFrais(Integer key,FraisMois uneFiche){
+        listeFraisMois.put(key,uneFiche);
+    }
+
 
     /**
      * Modification de l'affichage de la date (juste le mois et l'année, sans le jour)

@@ -3,6 +3,7 @@ package fr.cned.emdsgil.suividevosfrais.Vue;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -59,9 +60,10 @@ public class HfRecapActivity extends AppCompatActivity {
 	 */
 	private void afficheListe() {
 		Integer annee = ((DatePicker)findViewById(R.id.datHfRecap)).getYear() ;
+		Log.d("annee",""+annee);
 		Integer mois = ((DatePicker)findViewById(R.id.datHfRecap)).getMonth() + 1 ;
 		// récupération des frais HF pour cette date
-		Integer key = annee*100 + mois ;
+		Integer key = annee + mois ;
 		Hashtable<Integer, FraisHf> liste;
 		if (Global.listeFraisMois.containsKey(key)) {
 			liste = Global.listeFraisMois.get(key).getLesFraisHf() ;

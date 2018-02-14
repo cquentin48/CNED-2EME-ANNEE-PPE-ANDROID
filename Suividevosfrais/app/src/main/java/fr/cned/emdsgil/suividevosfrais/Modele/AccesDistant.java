@@ -18,6 +18,7 @@ import fr.cned.emdsgil.suividevosfrais.Outils.Outils;
 
 /**
  * Created by emds on 12/01/2017.
+ * Updated by Quentin CHAPEL
  */
 
 public class AccesDistant implements AsyncResponse {
@@ -63,7 +64,9 @@ public class AccesDistant implements AsyncResponse {
                         Compte account = new Compte(username, comptable, id);
 
                         //Initialisation du compte dans le contrôleur
-                        controle.setCompte(account);
+                        if(controle.getCompte() == null) {
+                            controle.setCompte(account);
+                        }
                     }catch(JSONException e){
                         e.printStackTrace();
                     }
@@ -74,89 +77,127 @@ public class AccesDistant implements AsyncResponse {
                 try {
                     //Récupération du tableau des fiches de frais
                     JSONArray fichesMoisJSONArray = new JSONArray(message[4]);
+                    FraisMois uneFiche;
 
-                    //Variables métier
-                    Hashtable<Integer, FraisMois> listeFicheFrais = new Hashtable<>();
+                    //Le mois et l'année de la fiche
+                    int mois;
+                    int annee;
+
+                    //Frais forfaitisés
+                    int nui;
+                    int km;
+                    int etp;
+                    int rep;
+
+                    //Définition du frais HF
+                    int jour;
+                    int id;
+                    float montant;
+                    String libelle;
 
                     //Récupération des informations de la fiche
                     for(int i = 0;i<fichesMoisJSONArray.length();i++){
 
                         //Déclaration des variables pour l'initialisations des fiches de frais
                             //Info Fiche => Mois
-                        JSONObject ficheMoisJSONObject = new JSONObject(fichesMoisJSONArray.get(0)+"");
-                        System.out.println(ficheMoisJSONObject.toString());
-                        JSONArray ficheMoisJSONArray = new JSONArray(ficheMoisJSONObject.toString());
-                        Log.d("Fiche Mois Array", ficheMoisJSONArray.toString());
-                        /*JSONObject infoFiche = new JSONObject(fichesMoisJSONArray.get(0)+"");
-                        JSONArray infoFicheMoisJSONArray = new JSONArray(infoFiche.toString());
-                        Log.d("Info fiche Mois",infoFicheMoisJSONArray.toString());
-                            //fraisForfaitisesJSONArray => Liste des frais Forfaitisés
-                        JSONArray fraisForfaitisesJSONArray = new JSONArray(fichesMoisJSONArray.get(1)+"");
-                        //Log.d("Frais forfaitisés",fraisForfaitisesJSONArray.toString());
-                            //fraisHorsForfaitsJSONArray => Liste des frais Hors-Forfait
-                        JSONArray fraisHorsForfaitsJSONArray = new JSONArray(fichesMoisJSONArray.get(2)+"");
-                        //Log.d("Frais Hors-Forfait",fraisHorsForfaitsJSONArray.toString());
+                            JSONObject ficheMoisJSONObject = new JSONObject(fichesMoisJSONArray.get(i)+"");
+                            Log.d("Fiche mois",ficheMoisJSONObject.toString());
 
-                        //Variables métiers
-                            //Objet métier pour la liste des frais du mois
-                        FraisMois unMois;
+                            //Récupération du mois et de l'année de la fiche
 
-                        //On extrait le mois et on le converti au format digital
-                        int mois = Outils.convertMonthToDigital(infoFiche.getString("mois"));
-                        int annee = Outils.convertYearToDigital(infoFiche.getString("mois"));
+                                //Mois
+                                mois = Integer.parseInt(ficheMoisJSONObject.getString("mois").substring(4));
+                                //Affichage logcat
+                                Log.d("Mois de la fiche",mois+"");
 
-                        //Initialisation du mois
-                        unMois = new FraisMois(annee, mois);
+                                //Année
+                                annee = Integer.parseInt(ficheMoisJSONObject.getString("mois").substring(0,4));
+                                //Affichage logcat
+                                Log.d("Annee de la fiche",annee+"");
 
-                        //Parcours de la table JSON des frais Forfaitisés
-                        for(int j = 0;j<fraisForfaitisesJSONArray.length();j++){
-                            //Déclaration de l'objet JSON
-                            JSONObject unFraisForfaitisee = new JSONObject(fraisForfaitisesJSONArray.get(j)+"");
+                        //Initialisation de la fiche
+                        uneFiche = new FraisMois(annee,mois);
+                        //Affichage logcat
+                        Log.d("Initialisation", "Initialistion de la fiche");
 
-                            //Déclaration des entités du frais forfaitisé : libellé et quantité
-                            String libelle = unFraisForfaitisee.getString("idfraisforfait");
-                            int quantite = unFraisForfaitisee.getInt("quantite");
+                        //Récupération des frais forfaitisés
+                            //Nuitée
+                            nui = ficheMoisJSONObject.getInt("nui");
+                            //Affichage logcat
+                            Log.d("Nuitée",nui+"");
 
-                            switch(libelle){
-                                //Etape
-                                case "ETP":
-                                    unMois.setEtape(quantite);
-                                    break;
-                                //Kilométrage
-                                case "KM":
-                                    unMois.setEtp(quantite);
-                                    break;
-                                //Nuitée
-                                case "NUI":
-                                    unMois.setNuitee(quantite);
-                                    break;
-                                //Repas
-                                case "REP":
-                                    unMois.setRepas(quantite);
-                                    break;
-                            }
+                            //Kilométrage
+                            km = ficheMoisJSONObject.getInt("km");
+                            //Affichage logcat
+                            Log.d("Forfait kilométrique",km+"");
 
+                            //Forfait étape
+                            etp = ficheMoisJSONObject.getInt("etp");
+                            //Affichage logcat
+                            Log.d("Nombre d'étapes",etp+"");
+
+                            //Repas
+                            rep = ficheMoisJSONObject.getInt("rep");
+                            //Affichage logcat
+                            Log.d("Repas midi",rep+"");
+
+                        //Ajout des frais forfaitisés dans la fiche
+                            //Message introduction logcat
+                            Log.d("Ajout des frais", "Ajout des frais forfaitisés dans la fiche du mois");
+
+                            uneFiche.setEtape(etp);
+                            uneFiche.setEtp(km);
+                            uneFiche.setRepas(rep);
+                            uneFiche.setNuitee(nui);
+
+                        //Récupération du nombre de frais hors-forfait
+                        int nbFraisHF = ficheMoisJSONObject.getInt("nbFraisHF");
+                        //Message introduction logcat
+                        Log.d("Nombre de frais HF", ""+nbFraisHF);
+
+                        //Import des frais hors-forfait
+                        for(int j = 0; j<nbFraisHF;j++){
+                            //Affichage dans la console
+                            Log.d("Import","Import des données du frais Hors-forfait n°"+j);
+
+                            //Import des données (jour, libellé, mois, montant, identifiant)
+                                //Jour
+                                jour = ficheMoisJSONObject.getInt("jour"+j);
+                                //Affichage dans la console
+                                Log.d("Jour du frais HF",jour+"");
+
+                                //Libellé
+                                libelle = ficheMoisJSONObject.getString("libelle"+j);
+                                //Affichage dans la console
+                                Log.d("Libellé du frais HF",libelle+"");
+
+                                //Montant
+                                montant = (float) ficheMoisJSONObject.getDouble("montant"+j);
+                                //Affichage dans la console
+                                Log.d("Montant du frais HF",montant+"");
+
+                                //Identifiant
+                                id = ficheMoisJSONObject.getInt("id"+j);
+                                //Affichage dans la console
+                                Log.d("Identifiant du frais HF",id+"");
+
+                            //Ajout du frais à la liste
+                            uneFiche.addFraisHf(montant,libelle,jour,id);
+                            //Affichage dans la console
+                            Log.d("Ajout","Ajout du frais Hors-forfait n°"+j+" dans la liste des frais hors-forfait pour le frais de "+annee+mois+".");
                         }
 
-                        //Parcours de la table JSON pour implémenter les frais hors-forfait
-                        for(int j = 0;j<fichesMoisJSONArray.length();j++){
-                            //Création de l'objet JSON pour la récupération du frais Hors-Forfait à l'indice j
-                            JSONObject unFraisJSON = new JSONObject(fraisHorsForfaitsJSONArray.get(j)+"");
-
-                            //Récupération des données de l'objet JSON se situant à l'indice j
-                            String libelle = unFraisJSON.getString("libelle");
-                            float montant = unFraisJSON.getLong("montant");
-                            int jour = unFraisJSON.getInt("jour");
-                            int key = unFraisJSON.getInt("id");
-
-                            //Ajout du frais dans la liste
-                            listeFicheFrais.get(i).addFraisHf(montant,libelle,jour,j);
+                        String key = annee+mois+"";
+                        //Ajout de la fiche à la liste
+                        controle.addFicheFrais(Integer.parseInt(key),uneFiche);
+                        //Affichage dans la console
+                        Log.d("Ajout","Ajout de la liste des frais HF à la fiche du mois "+annee+mois+".");
+                        if(controle.getListeFraisMois()==null){
+                            System.out.println("Liste nulle!");
+                        }else{
+                            System.out.println("Liste non nulle!");
                         }
-*/
                     }
-
-                    //On met à jour la liste des fiches de frais
-                    controle.setListeFraisMois(listeFicheFrais);
 
                   //En cas de problème
                 } catch (JSONException e) {
@@ -171,7 +212,7 @@ public class AccesDistant implements AsyncResponse {
 
             else if(message[0].equals("Erreur !")){
                 // retour suite à une erreur
-                Log.d("retour", "************erreur="+message[1]);
+                Log.e("Erreur", ""+message[1]);
             }
         }
     }

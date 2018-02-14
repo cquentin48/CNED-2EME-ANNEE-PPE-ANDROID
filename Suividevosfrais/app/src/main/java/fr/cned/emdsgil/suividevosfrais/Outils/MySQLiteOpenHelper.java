@@ -20,7 +20,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
      */
     public MySQLiteOpenHelper(Context context, String name, int version) {
         super(context, name, null, version);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -41,7 +40,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO Auto-generated method stub
     }
 
 }
