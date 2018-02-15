@@ -34,7 +34,8 @@ public class FraisMois implements Serializable {
      * @param motif Justification du frais hors forfait
      */
     public void addFraisHf(Float montant, String motif, Integer jour, Integer key) {
-        lesFraisHf.put(key,new FraisHf(montant, motif, jour));
+        FraisHf unFrais = new FraisHf(montant,motif,jour);
+        lesFraisHf.put(key,unFrais);
     }
 
     /**

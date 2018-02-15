@@ -1,6 +1,5 @@
 ﻿<?php
 require_once('c_mySqlHandlingFunctions.php');
-
 // test si le paramètre "operation" est présent
 if (isset($_POST["operation"])) {
 	$cnx = connexionPDO();
@@ -35,7 +34,6 @@ if (isset($_POST["operation"])) {
 					echo "Echec de connection avec l'identifiant '$username' et le mdp '$mdp'.%";
 				}			
 				break;
-				
 				//chargement des frais forfaitisés
 				case "chargementFrais":
 					print("chargementFrais%");
@@ -61,10 +59,10 @@ if (isset($_POST["operation"])) {
 							echo "succes%";
 							foreach($ligne as $key=>$uneLigne){
 								//On ajoute le mois dans le tableau de la fiche
-								$tabFrais[$key]['mois'] = $uneLigne['mois'];
+								$tabFrais[$key]['infoFiche']['mois'] = $uneLigne['mois'];
 								
 								//Variable pour la requête SQL
-								$mois = $tabFrais[$key]['mois'];
+								$mois = $tabFrais[$key]['infoFiche']['mois'];
 								
 								//Requête pour l'import des frais forfaitisés
 								$req2 = $cnx->prepare("SELECT `quantite`,`idfraisforfait`"
@@ -79,57 +77,17 @@ if (isset($_POST["operation"])) {
 								
 								//En cas de résultat
 								if(isset($ligne2)){
-									for($i = 0; $i<sizeof($ligne2);$i++){
-										switch($ligne2[$i]['idfraisforfait']){
-											//Frais Kilométrique
-											case "KM":
-												$tabFrais[$key]['km'] = $ligne2[$i]['quantite'];
-											break;
-											
-											//repas
-											case "REP":
-												$tabFrais[$key]['rep'] = $ligne2[$i]['quantite'];
-											break;
-											
-											//nuitee
-											case "NUI":
-												$tabFrais[$key]['nui'] = $ligne2[$i]['quantite'];
-											break;
-											
-											//etapes
-											case "ETP":
-												$tabFrais[$key]['etp'] = $ligne2[$i]['quantite'];
-											break;
-										}
-									}
+									//Copie des données dans le tableau
+									$tabFrais[$key]['fraisForfaitises'] = $ligne2;
 								}
-								$req2 = $cnx->prepare('SELECT `mois`, count(*) as "nbFraisHF"'
-													."FROM `lignefraishorsforfait`"
-													."WHERE `idvisiteur` = '$userId' AND `mois` = '$mois' AND `libelle` NOT LIKE '%REFUSE%'"
-													."GROUP By `mois`");
-								$req2->execute();
-								
-								$ligne2 = $req2->fetchAll(PDO::FETCH_ASSOC);
-								if(isset($ligne2)){
-										if(isset($ligne2[0]['nbFraisHF'])){
-											$tabFrais[$key]['nbFraisHF'] = $ligne2[0]['nbFraisHF'];
-										}else{
-											$tabFrais[$key]['nbFraisHF'] = 0;
-										}
-								}
-								$req2 = $cnx->prepare('SELECT `id`, `libelle`, EXTRACT(DAY FROM `date`) as "jour",`montant`'
+								$req2 = $cnx->prepare('SELECT `id`, `libelle`, EXTRACT(DAY FROM `mois`) as "jour",`montant`'
 													."FROM `lignefraishorsforfait`"
 													."WHERE `idvisiteur` = '$userId' AND `mois` = '$mois' AND `libelle` NOT LIKE '%REFUSE%';");
 								$req2->execute();
 								
 								$ligne2 = $req2->fetchAll(PDO::FETCH_ASSOC);
 								if(isset($ligne2)){
-									for($i = 0; $i<sizeof($ligne2);$i++){
-										$tabFrais[$key]['id'.$i] = $ligne2[$i]['id'];
-										$tabFrais[$key]['jour'.$i] = $ligne2[$i]['jour'];
-										$tabFrais[$key]['libelle'.$i] = $ligne2[$i]['libelle'];
-										$tabFrais[$key]['montant'.$i] = $ligne2[$i]['montant'];
-									}
+									$tabFrais[$key]['fraisHorsForfait'] = $ligne2;
 								}
 							}
 							print(json_encode($tabFrais, JSON_UNESCAPED_UNICODE));

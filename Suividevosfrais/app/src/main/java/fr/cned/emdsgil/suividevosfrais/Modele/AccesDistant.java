@@ -51,9 +51,14 @@ public class AccesDistant implements AsyncResponse {
         if(message.length>1){
             if(message[1].equals("connection")){
                 // retour suite à un enregistrement distant d'un profil
-                Log.d("retour", "************enreg="+message[1]);
+                Log.d("Retour du tableau JSON", message[1]);
                 if (message[2].equals("succes")) {
                     try {
+                        //Affichage dans la console
+                        Log.d("Opération", message[1]);
+
+
+
                         //Objet JSON pour le retour de l'opération SQL de connection
                         JSONObject returnArrayInfo = new JSONObject(message[4]);
 
@@ -65,6 +70,7 @@ public class AccesDistant implements AsyncResponse {
 
                         //Initialisation du compte dans le contrôleur
                         if(controle.getCompte() == null) {
+                            Log.d("Résultat","Connection réussie!");
                             controle.setCompte(account);
                         }
                     }catch(JSONException e){
@@ -115,8 +121,14 @@ public class AccesDistant implements AsyncResponse {
                                 //Affichage logcat
                                 Log.d("Annee de la fiche",annee+"");
 
+                        //La clé aura pour valeur : YYYYMM si le mois est supérieur ou égal à 10 || Si le mois est plus inférieur à 10 : YYYY0M
+                        String key = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+
                         //Initialisation de la fiche
                         uneFiche = new FraisMois(annee,mois);
+                        uneFiche.setAnnee(annee);
+                        uneFiche.setMois(mois);
+
                         //Affichage logcat
                         Log.d("Initialisation", "Initialistion de la fiche");
 
@@ -187,22 +199,23 @@ public class AccesDistant implements AsyncResponse {
                             Log.d("Ajout","Ajout du frais Hors-forfait n°"+j+" dans la liste des frais hors-forfait pour le frais de "+annee+mois+".");
                         }
 
-                        String key = annee+mois+"";
+                        //Affichage dans la console
+                        Log.d("Nombre de frais HF ajouté"+((controle.getListeFraisMois().size()>=2)?"s":"")+" pour le mois "+key,
+                              controle.getListeFraisMois().size()+" fiche"+((controle.getListeFraisMois().size()>=2)?"s.":"."));
+
+                        Log.d("Clé mois",Integer.parseInt(key)+"");
                         //Ajout de la fiche à la liste
                         controle.addFicheFrais(Integer.parseInt(key),uneFiche);
                         //Affichage dans la console
-                        Log.d("Ajout","Ajout de la liste des frais HF à la fiche du mois "+annee+mois+".");
-                        if(controle.getListeFraisMois()==null){
-                            System.out.println("Liste nulle!");
-                        }else{
-                            System.out.println("Liste non nulle!");
-                        }
+                        Log.d("Ajout","Ajout du frais du mois "+key+" à la liste.");
+                        controle.setLoadedData(true);
                     }
 
                   //En cas de problème
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Log.d("Nombre de fiches ajoutée"+((controle.getListeFraisMois().size()>=2)?"s":""), controle.getListeFraisMois().size()+" fiche"+((controle.getListeFraisMois().size()>=2)?"s ont été ajoutées.":"a été ajoutée."));
                 //Cas d'opération de mise à jour d'insertion ou de suppression de frais forfaitisés/hors-forfait
             }else if(message[0].equals("deleteFraisHF") || message[0].equals("mySQLDeleteFraisForfaitisee") || message[0].equals("mySQLSetFraisForfaitisee")){
                 for(int i = 2; i<message.length; i++){

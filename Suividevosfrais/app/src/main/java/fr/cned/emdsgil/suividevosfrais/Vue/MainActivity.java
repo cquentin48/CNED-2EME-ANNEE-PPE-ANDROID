@@ -11,8 +11,10 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 import fr.cned.emdsgil.suividevosfrais.Controleur.Global;
+import fr.cned.emdsgil.suividevosfrais.Modele.FraisHf;
 import fr.cned.emdsgil.suividevosfrais.Modele.FraisMois;
 import fr.cned.emdsgil.suividevosfrais.Outils.Serializer;
 import fr.cned.emdsgil.suividevosfrais.R;
@@ -26,23 +28,13 @@ public class MainActivity extends AppCompatActivity {
         this.controle = Global.getInstance(this);
         setContentView(R.layout.activity_main);
         setTitle("GSB : Suivi des frais");
+
         // récupération des informations sérialisées
         //recupSerialize();
 
-        //Chargement des frais de l'utilisateur
-        controle.chargementFrais(controle.getCompte().getUserId());
-        for(int i = 0;i<controle.getListeFraisMois().size();i++){
-            Log.d("Liste Frais Forfaitisé", "Frais n°"+i);
-            Log.d("année",controle.getListeFraisMois().get(i).getAnnee().toString());
-            Log.d("étape",controle.getListeFraisMois().get(i).getEtape().toString());
-            Log.d("Frais Kilométrique",controle.getListeFraisMois().get(i).getEtp().toString());
-            Log.d("Nuitée",controle.getListeFraisMois().get(i).getNuitee().toString());
-            for(int j = 0;j<controle.getListeFraisMois().size();j++){
-                Log.d("Frais Hors-Forfait :","Liste frais hors-forfait du mois"+controle.getListeFraisMois().get(i).getMois().toString());
-                Log.d("Motif",controle.getListeFraisMois().get(i).getLesFraisHf().get(j).getMotif());
-                Log.d("Montant",controle.getListeFraisMois().get(i).getLesFraisHf().get(j).getMontant().toString());
-            }
-            System.out.println("Fin de l'affichage");
+        //Chargement des frais de l'utilisateur si la liste est vide
+        if(this.controle.isLoadedData()==false){
+            this.controle.chargementFrais(this.controle.getCompte().getUserId());
         }
 
         // chargement des méthodes événementielles

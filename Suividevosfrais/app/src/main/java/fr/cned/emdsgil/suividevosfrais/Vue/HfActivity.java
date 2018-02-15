@@ -3,6 +3,7 @@ package fr.cned.emdsgil.suividevosfrais.Vue;
 import android.os.Bundle;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -74,7 +75,9 @@ public class HfActivity extends AppCompatActivity {
 				Integer annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
 				Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
 				Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
-				Integer key = annee*100+mois ;
+				String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+				Integer key = Integer.parseInt(keyText) ;
+				Log.d("Clé",key+"");
 
 				EditText libelleEditText = (EditText)findViewById(R.id.txtHfMotif);
 				EditText montantEditText =  (EditText)findViewById(R.id.txtHf);

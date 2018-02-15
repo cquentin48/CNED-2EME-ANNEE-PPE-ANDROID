@@ -24,6 +24,7 @@ public final class Global{
     private static Global instance = null;
     private static Context contexte;
     private static AccesDistant accesDistant;
+    private static boolean loadedData = false;
 
     //Modèles de données
     private Compte compte;
@@ -44,6 +45,14 @@ public final class Global{
             accesDistant = new AccesDistant();
         }
         return Global.instance ;
+    }
+
+    public static boolean isLoadedData() {
+        return loadedData;
+    }
+
+    public static void setLoadedData(boolean loadedData) {
+        Global.loadedData = loadedData;
     }
 
     /**

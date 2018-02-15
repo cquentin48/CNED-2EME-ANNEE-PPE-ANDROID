@@ -63,8 +63,10 @@ public class HfRecapActivity extends AppCompatActivity {
 		Log.d("annee",""+annee);
 		Integer mois = ((DatePicker)findViewById(R.id.datHfRecap)).getMonth() + 1 ;
 		// récupération des frais HF pour cette date
-		Integer key = annee + mois ;
+		String keyText = annee+((mois<10)?"0":"")+mois;
+		Integer key = Integer.parseInt(keyText) ;
 		Hashtable<Integer, FraisHf> liste;
+		Log.d("Clé mois",key+"");
 		if (Global.listeFraisMois.containsKey(key)) {
 			liste = Global.listeFraisMois.get(key).getLesFraisHf() ;
 		}else{
