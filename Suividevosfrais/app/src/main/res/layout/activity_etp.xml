@@ -90,18 +90,15 @@
             android:paddingEnd="10dp"
             tools:ignore="RtlSymmetry">
 
-            <EditText
+            <TextView
                 android:id="@+id/txtEtp"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:width="100dp"
-                android:gravity="end|center_vertical"
-                android:inputType="number">
-
-                <requestFocus />
-            </EditText>
-
+                android:layout_weight="1"
+                android:labelFor="@+id/txtEtp"
+                android:text="0"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
 
         <LinearLayout

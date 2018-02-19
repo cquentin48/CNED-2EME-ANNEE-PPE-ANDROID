@@ -194,7 +194,7 @@ public class AccesDistant implements AsyncResponse {
                                 Log.d("Identifiant du frais HF",id+"");
 
                             //Ajout du frais à la liste
-                            uneFiche.addFraisHf(montant,libelle,jour,id);
+                            uneFiche.addFraisHf(montant,libelle,jour,id,j);
                             //Affichage dans la console
                             Log.d("Ajout","Ajout du frais Hors-forfait n°"+j+" dans la liste des frais hors-forfait pour le frais de "+annee+mois+".");
                         }
@@ -217,7 +217,7 @@ public class AccesDistant implements AsyncResponse {
                 }
                 Log.d("Nombre de fiches ajoutée"+((controle.getListeFraisMois().size()>=2)?"s":""), controle.getListeFraisMois().size()+" fiche"+((controle.getListeFraisMois().size()>=2)?"s ont été ajoutées.":"a été ajoutée."));
                 //Cas d'opération de mise à jour d'insertion ou de suppression de frais forfaitisés/hors-forfait
-            }else if(message[0].equals("deleteFraisHF") || message[0].equals("mySQLDeleteFraisForfaitisee") || message[0].equals("mySQLSetFraisForfaitisee")){
+            }else if(message[0].equals("deleteFraisHF") || message[0].equals("mySQLDeleteFraisForfaitisee") || message[0].equals("updateUpdateFraisForfaitTable")){
                 for(int i = 2; i<message.length; i++){
                     Log.d("Opération Serveur MYSQL",message[i]);
                 }

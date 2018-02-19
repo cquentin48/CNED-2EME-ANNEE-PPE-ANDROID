@@ -10,8 +10,8 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -72,13 +72,14 @@ public class KmActivity extends AppCompatActivity {
         mois = ((DatePicker)findViewById(R.id.datKm)).getMonth() + 1 ;
         // récupération de la qte correspondant au mois actuel
         qte = 0 ;
-        Integer key = annee*100+mois ;
-        if (Global.listeFraisMois.containsKey(key)) {
-            qte = Global.listeFraisMois.get(key).getEtp() ;
+        String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+        int key = Integer.parseInt(keyText);
+        if (Global.getListeFraisMois().containsKey(key)) {
+            qte = Global.getListeFraisMois().get(key).getEtape() ;
         }
-        ((EditText)findViewById(R.id.txtKm)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
-        EditText txtEtp = (EditText)findViewById(R.id.txtKm);
-        txtEtp.invalidate();
+        ((TextView)findViewById(R.id.txtKm)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
+        TextView txtKm = (TextView)findViewById(R.id.txtKm);
+        txtKm.invalidate();
     }
 
     /**
@@ -98,7 +99,7 @@ public class KmActivity extends AppCompatActivity {
     private void cmdValider_clic() {
         findViewById(R.id.cmdKmValider).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Serializer.serialize(Global.listeFraisMois, KmActivity.this) ;
+                Serializer.serialize(Global.getListeFraisMois(), KmActivity.this) ;
                 retourActivityPrincipale() ;
             }
         }) ;
@@ -146,15 +147,16 @@ public class KmActivity extends AppCompatActivity {
      */
     private void enregNewQte() {
         // enregistrement dans la zone de texte
-        ((EditText)findViewById(R.id.txtKm)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
+        ((TextView)findViewById(R.id.txtKm)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
         // enregistrement dans la liste
-        Integer key = annee*100+mois ;
-        if (!Global.listeFraisMois.containsKey(key)) {
+        String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+        int key = Integer.parseInt(keyText);
+        if (!Global.getListeFraisMois().containsKey(key)) {
             // creation du mois et de l'annee s'ils n'existent pas déjà
-            Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
+            Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
         }
-        Global.listeFraisMois.get(key).setEtp(qte);
-        controle.mySQLSetFraisForfaitisee(annee.toString()+mois.toString(),"KM",controle.getCompte().getUserId(),qte);
+        Global.getListeFraisMois().get(key).setEtape(qte);
+        controle.updateUpdateFraisForfaitTable(key,"KM",qte);
     }
 
     /**

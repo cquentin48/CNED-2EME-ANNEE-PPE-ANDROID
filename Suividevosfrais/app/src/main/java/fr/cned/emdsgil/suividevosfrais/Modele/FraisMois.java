@@ -15,7 +15,20 @@ public class FraisMois implements Serializable {
     private Integer km; // nombre de km du mois
     private Integer nuitee; // nombre de nuitées du mois
     private Integer repas; // nombre de repas du mois
+    private String modifType; //Type de modification
     private final Hashtable<Integer, FraisHf> lesFraisHf; // liste des frais hors forfait du mois
+
+    public Integer getKm() {
+        return km;
+    }
+
+    public void setKm(Integer km) {
+        this.km = km;
+    }
+
+    public void setModifType(String modifType) {
+        this.modifType = modifType;
+    }
 
     public FraisMois(Integer annee, Integer mois) {
         this.annee = annee;
@@ -24,6 +37,7 @@ public class FraisMois implements Serializable {
         this.km = 0;
         this.nuitee = 0;
         this.repas = 0;
+        this.modifType = "";
         lesFraisHf = new Hashtable<>();
     }
 
@@ -32,9 +46,12 @@ public class FraisMois implements Serializable {
      *
      * @param montant Montant en euros du frais hors forfait
      * @param motif Justification du frais hors forfait
+     * @param jour le jour du montant Hors-forfait
+     * @param MySQLkey l'index du frais dans la base MYSQL
+     * @param key l'index pour la table HashTable
      */
-    public void addFraisHf(Float montant, String motif, Integer jour, Integer key) {
-        FraisHf unFrais = new FraisHf(montant,motif,jour);
+    public void addFraisHf(Float montant, String motif, Integer jour, Integer MySQLkey, Integer key) {
+        FraisHf unFrais = new FraisHf(montant,motif,jour,MySQLkey);
         lesFraisHf.put(key,unFrais);
     }
 

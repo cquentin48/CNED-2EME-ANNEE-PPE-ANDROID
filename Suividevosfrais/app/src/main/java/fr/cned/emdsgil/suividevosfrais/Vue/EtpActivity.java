@@ -10,8 +10,8 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -72,11 +72,12 @@ public class EtpActivity extends AppCompatActivity {
         mois = ((DatePicker)findViewById(R.id.datEtp)).getMonth() + 1 ;
         // récupération de la qte correspondant au mois actuel
         qte = 0 ;
-        Integer key = annee*100+mois ;
-        if (Global.listeFraisMois.containsKey(key)) {
-            qte = Global.listeFraisMois.get(key).getEtp() ;
+        String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+        int key = Integer.parseInt(keyText);
+        if (Global.getListeFraisMois().containsKey(key)) {
+            qte = Global.getListeFraisMois().get(key).getEtp() ;
         }
-        ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
+        ((TextView)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
     }
 
     /**
@@ -96,7 +97,7 @@ public class EtpActivity extends AppCompatActivity {
     private void cmdValider_clic() {
         findViewById(R.id.cmdEtpValider).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Serializer.serialize(Global.listeFraisMois, EtpActivity.this) ;
+                Serializer.serialize(Global.getListeFraisMois(), EtpActivity.this) ;
                 //Maj base de données
                 retourActivityPrincipale() ;
             }
@@ -145,15 +146,16 @@ public class EtpActivity extends AppCompatActivity {
      */
     private void enregNewQte() {
         // enregistrement dans la zone de texte
-        ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
+        ((TextView)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
         // enregistrement dans la liste
-        Integer key = annee*100+mois ;
-        if (!Global.listeFraisMois.containsKey(key)) {
+        String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+        int key = Integer.parseInt(keyText);
+        if (!Global.getListeFraisMois().containsKey(key)) {
             // creation du mois et de l'annee s'ils n'existent pas déjà
-            Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
+            Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
         }
-        Global.listeFraisMois.get(key).setEtp(qte);
-        controle.mySQLSetFraisForfaitisee(annee.toString()+mois.toString(),"ETP",controle.getCompte().getUserId(),qte);
+        Global.getListeFraisMois().get(key).setEtp(qte);
+        controle.updateUpdateFraisForfaitTable(key,"ETP",qte);
     }
 
     /**

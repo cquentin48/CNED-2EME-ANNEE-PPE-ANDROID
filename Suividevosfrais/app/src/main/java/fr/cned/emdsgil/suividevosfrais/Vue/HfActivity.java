@@ -13,10 +13,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import java.util.HashMap;
-
 import fr.cned.emdsgil.suividevosfrais.Controleur.Global;
-import fr.cned.emdsgil.suividevosfrais.Modele.AccesDistant;
 import fr.cned.emdsgil.suividevosfrais.Modele.FraisMois;
 import fr.cned.emdsgil.suividevosfrais.Outils.Serializer;
 import fr.cned.emdsgil.suividevosfrais.R;
@@ -76,7 +73,7 @@ public class HfActivity extends AppCompatActivity {
 				Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
 				Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
 				String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
-				Integer key = Integer.parseInt(keyText) ;
+				int key = Integer.parseInt(keyText);
 				Log.d("Clé",key+"");
 
 				EditText libelleEditText = (EditText)findViewById(R.id.txtHfMotif);
@@ -84,11 +81,11 @@ public class HfActivity extends AppCompatActivity {
 
 
 				enregListe() ;
-    			Serializer.serialize(Global.listeFraisMois, HfActivity.this) ;
+    			Serializer.serialize(Global.getListeFraisMois(), HfActivity.this) ;
     			retourActivityPrincipale() ;
 
 				//Récupération des entité du frais
-				int id = Global.listeFraisMois.get(key).getLesFraisHf().size()+1;
+				int id = Global.getListeFraisMois().get(key).getLesFraisHf().size()+1;
 				String creationDate = annee.toString()+mois.toString();
 				String idVisiteur = controle.getCompte().getUserId();
 				String libelle = libelleEditText.getText().toString();
@@ -96,7 +93,7 @@ public class HfActivity extends AppCompatActivity {
 				String montant = montantEditText.getText().toString();
 
 				//Requête SQL pour la maj des données
-				controle.mySQLSetFraisHorsForfait(id, creationDate, idVisiteur, libelle, date, montant);
+				controle.updateUpdateFraisHorsForfaitTable(id, Integer.parseInt(creationDate), idVisiteur, libelle, jour, Float.parseFloat(montant));
 			}
     	}) ;    	
     }
@@ -113,12 +110,13 @@ public class HfActivity extends AppCompatActivity {
 		Float montant = Float.valueOf((((EditText)findViewById(R.id.txtHf)).getText().toString()));
 		String motif = ((EditText)findViewById(R.id.txtHfMotif)).getText().toString() ;
 		// enregistrement dans la liste
-		Integer key = annee*100+mois ;
-		if (!Global.listeFraisMois.containsKey(key)) {
+		String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+		int key = Integer.parseInt(keyText);
+		if (!Global.getListeFraisMois().containsKey(key)) {
 			// creation du mois et de l'annee s'ils n'existent pas déjà
-			Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
+			Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
 		}
-		Global.listeFraisMois.get(key).addFraisHf(montant, motif, jour, idFrais) ;
+		Global.getListeFraisMois().get(key).addFraisHf(montant, motif, jour, idFrais,Global.getListeFraisMois().get(key).getLesFraisHf().size()+1) ;
 	}
 
 	/**

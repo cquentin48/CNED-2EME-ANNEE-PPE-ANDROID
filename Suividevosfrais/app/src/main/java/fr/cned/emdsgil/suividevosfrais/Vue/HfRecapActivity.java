@@ -67,8 +67,8 @@ public class HfRecapActivity extends AppCompatActivity {
 		Integer key = Integer.parseInt(keyText) ;
 		Hashtable<Integer, FraisHf> liste;
 		Log.d("Clé mois",key+"");
-		if (Global.listeFraisMois.containsKey(key)) {
-			liste = Global.listeFraisMois.get(key).getLesFraisHf() ;
+		if (Global.getListeFraisMois().containsKey(key)) {
+			liste = Global.getListeFraisMois().get(key).getLesFraisHf() ;
 		}else{
 			liste = new Hashtable<>() ;
 			/* Retrait du type de l'ArrayList (Optimisation Android Studio)

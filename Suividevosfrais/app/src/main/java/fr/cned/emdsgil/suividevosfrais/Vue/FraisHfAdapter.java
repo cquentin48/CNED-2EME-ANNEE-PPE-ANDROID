@@ -1,6 +1,7 @@
 package fr.cned.emdsgil.suividevosfrais.Vue;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +71,7 @@ public class FraisHfAdapter extends BaseAdapter {
 	 */
 	@Override
 	public View getView(final int index, View convertView, ViewGroup parent) {
+		Log.d("Index",index+"");
 		ViewHolder holder ;
 		if (convertView == null) {
 			holder = new ViewHolder() ;
@@ -82,6 +84,7 @@ public class FraisHfAdapter extends BaseAdapter {
 		}else{
 			holder = (ViewHolder)convertView.getTag();
 		}
+
 		holder.txtListJour.setText(String.format(Locale.FRANCE, "%d", lesFrais.get(index).getJour()));
 		holder.txtListMontant.setText(String.format(Locale.FRANCE, "%.2f", lesFrais.get(index).getMontant())) ;
 		holder.txtListMotif.setText(lesFrais.get(index).getMotif()) ;

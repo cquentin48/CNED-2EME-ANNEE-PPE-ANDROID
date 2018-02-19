@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         cmdMenu_clic(((ImageButton) findViewById(R.id.cmdRepas)), RepActivity.class);
         cmdMenu_clic(((ImageButton) findViewById(R.id.cmdNuitee)), NuiActivity.class);
         cmdMenu_clic(((ImageButton) findViewById(R.id.cmdHfRecap)), HfRecapActivity.class);
+        cmdMenu_clic(((ImageButton) findViewById(R.id.cmdHfRecap)), HfRecapActivity.class);
         cmdTransfert_clic();
     }
 
@@ -72,11 +73,11 @@ public class MainActivity extends AppCompatActivity {
             for (Hashtable.Entry<?, ?> entry : monHash.entrySet()) {
                 monHashCast.put((Integer) entry.getKey(), (FraisMois) entry.getValue());
             }
-            Global.listeFraisMois = monHashCast;
+            Global.setListeFraisMois(monHashCast);
         }
         // si rien n'a été récupéré, il faut créer la liste
-        if (Global.listeFraisMois == null) {
-            Global.listeFraisMois = new Hashtable<>();
+        if (Global.getListeFraisMois() == null) {
+            Global.setListeFraisMois(new Hashtable<Integer, FraisMois>());
             /* Retrait du type de l'HashTable (Optimisation Android Studio)
 			 * Original : Typage explicit =
 			 * Global.listeFraisMois = new Hashtable<Integer, FraisMois>();
@@ -104,8 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private void cmdTransfert_clic() {
         findViewById(R.id.cmdTransfert).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                // envoi les informations sérialisées vers le serveur
-                // en construction
+                Global.UpdateFrais(controle.getListeFraisMoisMaj());
             }
         });
     }

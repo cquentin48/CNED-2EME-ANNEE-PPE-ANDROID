@@ -10,8 +10,8 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -33,10 +33,11 @@ public class NuiActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         controle.getInstance(this);
+        Global.estDefini();
         setContentView(R.layout.activity_nui);
-        setTitle("GSB : Frais ETP");
+        setTitle("GSB : Frais Nuitée");
         // modification de l'affichage du DatePicker
-        Global.changeAfficheDate((DatePicker) findViewById(R.id.datEtp), false) ;
+        Global.changeAfficheDate((DatePicker) findViewById(R.id.datNui), false) ;
         // valorisation des propriétés
         valoriseProprietes() ;
         // chargement des méthodes événementielles
@@ -68,22 +69,23 @@ public class NuiActivity extends AppCompatActivity {
      * Valorisation des propriétés avec les informations affichées
      */
     private void valoriseProprietes() {
-        annee = ((DatePicker)findViewById(R.id.datEtp)).getYear() ;
-        mois = ((DatePicker)findViewById(R.id.datEtp)).getMonth() + 1 ;
+        annee = ((DatePicker)findViewById(R.id.datNui)).getYear() ;
+        mois = ((DatePicker)findViewById(R.id.datNui)).getMonth() + 1 ;
         // récupération de la qte correspondant au mois actuel
         qte = 0 ;
-        Integer key = annee*100+mois ;
-        if (Global.listeFraisMois.containsKey(key)) {
-            qte = Global.listeFraisMois.get(key).getEtp() ;
+        String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+        int key = Integer.parseInt(keyText);
+        if (Global.getListeFraisMois().containsKey(key)) {
+            qte = Global.getListeFraisMois().get(key).getNuitee() ;
         }
-        ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
+        ((TextView)findViewById(R.id.txtNui)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
     }
 
     /**
      * Sur la selection de l'image : retour au menu principal
      */
     private void imgReturn_clic() {
-        findViewById(R.id.imgEtpReturn).setOnClickListener(new ImageView.OnClickListener() {
+        findViewById(R.id.imgNuiReturn).setOnClickListener(new ImageView.OnClickListener() {
             public void onClick(View v) {
                 retourActivityPrincipale() ;
             }
@@ -94,9 +96,9 @@ public class NuiActivity extends AppCompatActivity {
      * Sur le clic du bouton valider : sérialisation
      */
     private void cmdValider_clic() {
-        findViewById(R.id.cmdEtpValider).setOnClickListener(new Button.OnClickListener() {
+        findViewById(R.id.cmdNuiValider).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Serializer.serialize(Global.listeFraisMois, NuiActivity.this) ;
+                Serializer.serialize(Global.getListeFraisMois(), NuiActivity.this) ;
                 retourActivityPrincipale() ;
             }
         }) ;
@@ -106,9 +108,9 @@ public class NuiActivity extends AppCompatActivity {
      * Sur le clic du bouton plus : ajout de 10 dans la quantité
      */
     private void cmdPlus_clic() {
-        findViewById(R.id.cmdEtpPlus).setOnClickListener(new Button.OnClickListener() {
+        findViewById(R.id.cmdNuiPlus).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                qte+=10 ;
+                qte+=1 ;
                 enregNewQte() ;
             }
         }) ;
@@ -118,7 +120,7 @@ public class NuiActivity extends AppCompatActivity {
      * Sur le clic du bouton moins : enlève 10 dans la quantité si c'est possible
      */
     private void cmdMoins_clic() {
-        findViewById(R.id.cmdEtpMoins).setOnClickListener(new Button.OnClickListener() {
+        findViewById(R.id.cmdNuiMoins).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 qte = Math.max(0, qte-10) ; // suppression de 10 si possible
                 enregNewQte() ;
@@ -130,7 +132,7 @@ public class NuiActivity extends AppCompatActivity {
      * Sur le changement de date : mise à jour de l'affichage de la qte
      */
     private void dat_clic() {
-        final DatePicker uneDate = (DatePicker) findViewById(R.id.datEtp);
+        final DatePicker uneDate = (DatePicker) findViewById(R.id.datNui);
         uneDate.init(uneDate.getYear(), uneDate.getMonth(), uneDate.getDayOfMonth(), new OnDateChangedListener(){
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -144,15 +146,21 @@ public class NuiActivity extends AppCompatActivity {
      */
     private void enregNewQte() {
         // enregistrement dans la zone de texte
-        ((EditText)findViewById(R.id.txtEtp)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
-        // enregistrement dans la liste
-        Integer key = annee*100+mois ;
-        if (!Global.listeFraisMois.containsKey(key)) {
-            // creation du mois et de l'annee s'ils n'existent pas déjà
-            Global.listeFraisMois.put(key, new FraisMois(annee, mois)) ;
+        ((TextView)findViewById(R.id.txtNui)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
+        if(qte == 0 || qte == 1){
+            ((TextView)findViewById(R.id.lblNui)).setText(String.format(Locale.FRANCE, "Etape"));
+        }else{
+            ((TextView)findViewById(R.id.lblNui)).setText(String.format(Locale.FRANCE, "Etapes"));
         }
-        Global.listeFraisMois.get(key).setEtp(qte) ;
-        controle.mySQLSetFraisForfaitisee(annee.toString()+mois.toString(),"NUI",controle.getCompte().getUserId(),qte);
+        // enregistrement dans la liste
+        String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
+        int key = Integer.parseInt(keyText);
+        if (!Global.getListeFraisMois().containsKey(key)) {
+            // creation du mois et de l'annee s'ils n'existent pas déjà
+            Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
+        }
+        Global.getListeFraisMois().get(key).setNuitee(qte) ;
+        Global.updateUpdateFraisForfaitTable(key,"NUI",qte);
     }
 
     /**
