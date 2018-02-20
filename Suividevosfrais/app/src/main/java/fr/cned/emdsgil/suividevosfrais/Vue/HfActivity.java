@@ -12,6 +12,9 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.Locale;
 
 import fr.cned.emdsgil.suividevosfrais.Controleur.Global;
 import fr.cned.emdsgil.suividevosfrais.Modele.FraisMois;
@@ -20,12 +23,14 @@ import fr.cned.emdsgil.suividevosfrais.R;
 
 public class HfActivity extends AppCompatActivity {
 	private Global controle;
+	private Button ajouterButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_hf);
         setTitle("GSB : Frais HF");
+        ajouterButton = (Button)findViewById(R.id.cmdHfAjouter);
 		controle.getInstance(this);
         // modification de l'affichage du DatePicker
         Global.changeAfficheDate((DatePicker) findViewById(R.id.datHf), true) ;
@@ -34,6 +39,7 @@ public class HfActivity extends AppCompatActivity {
         // chargement des méthodes événementielles
 		imgReturn_clic() ;
 		cmdAjouter_clic() ;
+		dat_clic();
 	}
 
 	@Override
@@ -63,60 +69,109 @@ public class HfActivity extends AppCompatActivity {
     	}) ;
     }
 
+	/**
+	 * Sur le changement de date : mise à jour de l'affichage de la qte
+	 */
+	private void dat_clic() {
+		final DatePicker uneDate = (DatePicker) findViewById(R.id.datHf);
+		uneDate.init(uneDate.getYear(), uneDate.getMonth(), uneDate.getDayOfMonth(), new DatePicker.OnDateChangedListener(){
+			@Override
+			public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+				valoriserPropriete() ;
+			}
+		});
+	}
+
     /**
      * Sur le clic du bouton ajouter : enregistrement dans la liste et sérialisation
      */
     private void cmdAjouter_clic() {
     	findViewById(R.id.cmdHfAjouter).setOnClickListener(new Button.OnClickListener() {
     		public void onClick(View v) {
+    			//Récupération des données en provenance de la fenêtre
 				Integer annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
 				Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
 				Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
 				String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
 				int key = Integer.parseInt(keyText);
-				Log.d("Clé",key+"");
+				Log.d("Frais HF","Chargement du frais du mois"+key);
 
 				EditText libelleEditText = (EditText)findViewById(R.id.txtHfMotif);
 				EditText montantEditText =  (EditText)findViewById(R.id.txtHf);
 
+				//Récupération du montant entré dans la fenêtre
+				String montantEntree = (((EditText)findViewById(R.id.txtHf)).getText().toString());
 
-				enregListe() ;
-    			Serializer.serialize(Global.getListeFraisMois(), HfActivity.this) ;
+				//Conversion du montant au format float sous la forme suivante : entier+montant sous la virgule/100
+				Float montant = Float.valueOf(montantEntree.substring(0,montantEntree.length()-3))
+						+(Float.valueOf(montantEntree.substring(montantEntree.length()-1))/100);
+				String motif = ((EditText)findViewById(R.id.txtHfMotif)).getText().toString() ;
+
+
+				//enregListe() ;
+    			//Serializer.serialize(Global.getListeFraisMois(), HfActivity.this) ;
     			retourActivityPrincipale() ;
 
 				//Récupération des entité du frais
 				int id = Global.getListeFraisMois().get(key).getLesFraisHf().size()+1;
-				String creationDate = annee.toString()+mois.toString();
 				String idVisiteur = controle.getCompte().getUserId();
 				String libelle = libelleEditText.getText().toString();
-				String date = annee.toString()+"-"+mois.toString()+"-"+jour.toString();
-				String montant = montantEditText.getText().toString();
 
-				//Requête SQL pour la maj des données
-				controle.updateUpdateFraisHorsForfaitTable(id, Integer.parseInt(creationDate), idVisiteur, libelle, jour, Float.parseFloat(montant));
+				//Ajout dans la table
+				Global.updateUpdateFraisHorsForfaitTable(key, mois, annee, controle.getCompte().getUserId(), motif, jour, montant);
 			}
-    	}) ;    	
+		}) ;
     }
-    
-	/**
-	 * Enregistrement dans la liste du nouveau frais hors forfait
-	 */
-	private void enregListe() {
-		// récupération des informations saisies
-		Integer annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
-		Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
-		Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
-		Integer idFrais = 0;
-		Float montant = Float.valueOf((((EditText)findViewById(R.id.txtHf)).getText().toString()));
-		String motif = ((EditText)findViewById(R.id.txtHfMotif)).getText().toString() ;
-		// enregistrement dans la liste
+
+	private void valoriserPropriete(){
+		//Propriété pour la fenêtre
+		int annee, mois,jour;
+		float qte;
+		String libelle;
+
+		//Récupération de la date
+		annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
+		mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
+		jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth();
+
+		// récupération de la qte correspondant au mois actuel
+		qte = 0 ;
+		libelle = "";
+
+		//Récupération de la clé
 		String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
 		int key = Integer.parseInt(keyText);
-		if (!Global.getListeFraisMois().containsKey(key)) {
-			// creation du mois et de l'annee s'ils n'existent pas déjà
-			Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
+		Log.d("Clé",key+"");
+		if(controle.getListeFraisMois().containsKey(201710)){
+			Log.d("Mois", "Mois présent");
 		}
-		Global.getListeFraisMois().get(key).addFraisHf(montant, motif, jour, idFrais,Global.getListeFraisMois().get(key).getLesFraisHf().size()+1) ;
+
+		//S'il existe une fiche de frais du mois
+		if (controle.getListeFraisMois().containsKey(key)) {
+			Log.d("Opération","Bon Mois");
+			//Récupération de la fiche
+			FraisMois uneFiche = Global.getListeFraisMois().get(key);
+
+			//Parcours de la fiche
+			for(int i = 0;i<uneFiche.getLesFraisHf().size();i++){
+				//Si le frais HF existe pour ce jour-ci
+				if(uneFiche.getLesFraisHf().get(i).getJour() == jour){
+					qte = uneFiche.getLesFraisHf().get(i).getMontant();
+					libelle = uneFiche.getLesFraisHf().get(i).getMotif();
+					if(!(ajouterButton.getText().toString() == "Modifier")){
+						ajouterButton.setText("Modifier");
+					}
+				}else{
+					if(!(ajouterButton.getText().toString() == "Ajouter")){
+						ajouterButton.setText("Ajouter");
+					}
+				}
+			}
+		}
+
+		//Mise à jour des libellé des frais hors-forfait dans la fenêtre
+		((TextView)findViewById(R.id.txtHf)).setText(String.format(Locale.FRANCE, "%.2f", qte)) ;
+		((TextView)findViewById(R.id.txtHfMotif)).setText(libelle) ;
 	}
 
 	/**

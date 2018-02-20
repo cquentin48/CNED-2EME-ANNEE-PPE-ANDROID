@@ -23,7 +23,7 @@ import fr.cned.emdsgil.suividevosfrais.Outils.Outils;
 
 public class AccesDistant implements AsyncResponse {
 
-    // constante
+    // constantes
     private static final String SERVERADDR = "http://192.168.56.1/android-suivifrais/mysqlHandling.php";
     private Global controle ;
 
@@ -239,6 +239,9 @@ public class AccesDistant implements AsyncResponse {
         AccesHTTP accesDonnees = new AccesHTTP();
         // permet de faire le lien asynchrone avec AccesHTTP
         accesDonnees.delegate = this;
+        if(operation == "majFrais"){
+            accesDonnees.addParam("userId",controle.getCompte().getUserId());
+        }
         // paramètres POST pour l'envoi vers le serveur distant
         accesDonnees.addParam("operation", operation);
         accesDonnees.addParam("lesdonnees", lesDonneesJSON.toString());

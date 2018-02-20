@@ -147,7 +147,7 @@ public final class Global{
      * @param libelle la description du frais
      * @param montant le montant du frais
      */
-    public void updateUpdateFraisHorsForfaitTable(int id, int mois, String idVisiteur, String libelle, int jour, float montant){
+    public static void updateUpdateFraisHorsForfaitTable(int id, int annee, int mois, String idVisiteur, String libelle, int jour, float montant){
         //Si le frais forfaitisé fait parti d'une fiche déjà existante
         if(listeFraisMois.containsKey(mois) == true){
             Log.d("Operation","Ajout d'un frais hors-forfait à la liste de maj");
@@ -169,7 +169,7 @@ public final class Global{
                 Log.d("Opération", "Ajout du frais Hors-forfait à la fiche présente dans la table de mise à jour");
             }else{
                 //On incrémente l'indice maximum de frais hors-forfait
-                this.maxIndiceFraisHF++;
+                maxIndiceFraisHF++;
 
                 //Affichage dans la console
                 Log.d("Info", "Frais Hors-forfait non existant => création du frais => Clause INSERT dans la base");
@@ -182,26 +182,21 @@ public final class Global{
                 listeFraisMoisMaj.put(mois,listeFraisMois.get(mois));
 
                 //On ajoute la fiche de frais à la liste de maj
-                listeFraisMoisMaj.get(mois).addFraisHf(montant,libelle,jour,this.maxIndiceFraisHF,listeFraisMoisMaj.get(mois).getLesFraisHf().size()+1);
+                listeFraisMoisMaj.get(mois).addFraisHf(montant,libelle,jour,maxIndiceFraisHF,listeFraisMoisMaj.get(mois).getLesFraisHf().size()+1);
                 Log.d("Opération", "Ajout du frais hors-forfait à la table de mise à jour");
-                listeFraisMoisMaj.get(mois).getLesFraisHf().get(listeFraisMoisMaj.get(mois).getLesFraisHf().get(this.maxIndiceFraisHF)).setModified("CREE");
+                listeFraisMoisMaj.get(mois).getLesFraisHf().get(listeFraisMoisMaj.get(mois).getLesFraisHf().get(maxIndiceFraisHF)).setModified("CREE");
             }
             //Sinon
         }else{
             Log.d("Operation","Ajout d'un frais hors-forfait à la liste de maj");
             Log.d("Info","Fiche non existante => Création de la fiche");
             //On transforme l'integer du mois en string
-            String moisString = mois+"";
-
-            //On extrait le mois et l'année
-            int moisInt = Integer.parseInt(moisString.substring(4));
-            int anneeInt = Integer.parseInt(moisString.substring(0,3));
 
             //On crée une fiche de mois pour l'incorporer à la liste des données
-            listeFraisMoisMaj.put(mois, new FraisMois(moisInt,anneeInt));
+            listeFraisMoisMaj.put(mois, new FraisMois(mois,annee));
             listeFraisMoisMaj.get(mois).setModifType("CREE");
             //On incrémente l'indice maximum de frais hors-forfait
-            this.maxIndiceFraisHF++;
+            maxIndiceFraisHF++;
 
             //Affichage dans la console
             Log.d("Info", "Frais Hors-forfait non existant => création du frais => Clause INSERT dans la base");
@@ -214,7 +209,7 @@ public final class Global{
             listeFraisMoisMaj.put(mois,listeFraisMois.get(mois));
 
             //On ajoute la fiche de frais à la liste de maj
-            listeFraisMoisMaj.get(mois).addFraisHf(montant,libelle,jour,this.maxIndiceFraisHF,listeFraisMoisMaj.get(mois).getLesFraisHf().size()+1);
+            listeFraisMoisMaj.get(mois).addFraisHf(montant,libelle,jour,maxIndiceFraisHF,listeFraisMoisMaj.get(mois).getLesFraisHf().size()+1);
             Log.d("Opération", "Ajout de la fiche à la table de mise à jour");
             Log.d("Opération", "Ajout du frais Hors-forfait à la table de mise à jour");
             listeFraisMoisMaj.get(mois).setModifType("CREE");
