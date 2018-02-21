@@ -88,37 +88,48 @@ public class HfActivity extends AppCompatActivity {
     private void cmdAjouter_clic() {
     	findViewById(R.id.cmdHfAjouter).setOnClickListener(new Button.OnClickListener() {
     		public void onClick(View v) {
+
     			//Récupération des données en provenance de la fenêtre
 				Integer annee = ((DatePicker)findViewById(R.id.datHf)).getYear() ;
 				Integer mois = ((DatePicker)findViewById(R.id.datHf)).getMonth() + 1 ;
 				Integer jour = ((DatePicker)findViewById(R.id.datHf)).getDayOfMonth() ;
+
+				//Récupération des index de la fiche de frais et du frais hf (valeur par défault)
 				String keyText = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
 				int key = Integer.parseInt(keyText);
+				int id = Global.getMaxIndiceFraisHF()+1;
+
+				//Affichage logcat
 				Log.d("Frais HF","Chargement du frais du mois"+key);
 
-				EditText libelleEditText = (EditText)findViewById(R.id.txtHfMotif);
-				EditText montantEditText =  (EditText)findViewById(R.id.txtHf);
-
-				//Récupération du montant entré dans la fenêtre
+				//Récupération du montant et du libellé entrés dans la fenêtre
 				String montantEntree = (((EditText)findViewById(R.id.txtHf)).getText().toString());
+				EditText libelleEditText = (EditText)findViewById(R.id.txtHfMotif);
 
 				//Conversion du montant au format float sous la forme suivante : entier+montant sous la virgule/100
 				Float montant = Float.valueOf(montantEntree.substring(0,montantEntree.length()-3))
 						+(Float.valueOf(montantEntree.substring(montantEntree.length()-1))/100);
-				String motif = ((EditText)findViewById(R.id.txtHfMotif)).getText().toString() ;
 
 
 				//enregListe() ;
     			//Serializer.serialize(Global.getListeFraisMois(), HfActivity.this) ;
-    			retourActivityPrincipale() ;
 
-				//Récupération des entité du frais
-				int id = Global.getListeFraisMois().get(key).getLesFraisHf().size()+1;
-				String idVisiteur = controle.getCompte().getUserId();
-				String libelle = libelleEditText.getText().toString();
+				//Parcours de la table des frais HF de la fiche de frais
+    			for(int i = 0;i<Global.getListeFraisMois().get(key).getLesFraisHf().size();i++){
+    				//Si le frais HF est déjà existant
+    				if(Global.getListeFraisMois().get(key).getLesFraisHf().get(i).getJour() == jour){
+    					id = i;
+					}
+				}
+
+				//Récupération du motif
+				String motif = libelleEditText.getText().toString() ;
 
 				//Ajout dans la table
-				Global.updateUpdateFraisHorsForfaitTable(key, mois, annee, controle.getCompte().getUserId(), motif, jour, montant);
+				Global.updateUpdateFraisHorsForfaitTable(id, mois, annee, motif, jour, montant);
+
+				//Retour au menu principal
+				retourActivityPrincipale() ;
 			}
 		}) ;
     }
@@ -155,6 +166,7 @@ public class HfActivity extends AppCompatActivity {
 			//Parcours de la fiche
 			for(int i = 0;i<uneFiche.getLesFraisHf().size();i++){
 				//Si le frais HF existe pour ce jour-ci
+				Log.d("variable i",i+"");
 				if(uneFiche.getLesFraisHf().get(i).getJour() == jour){
 					qte = uneFiche.getLesFraisHf().get(i).getMontant();
 					libelle = uneFiche.getLesFraisHf().get(i).getMotif();

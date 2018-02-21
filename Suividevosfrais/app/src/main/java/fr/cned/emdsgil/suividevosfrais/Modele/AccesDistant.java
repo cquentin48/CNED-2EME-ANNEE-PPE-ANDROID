@@ -217,9 +217,24 @@ public class AccesDistant implements AsyncResponse {
                 }
                 Log.d("Nombre de fiches ajoutée"+((controle.getListeFraisMois().size()>=2)?"s":""), controle.getListeFraisMois().size()+" fiche"+((controle.getListeFraisMois().size()>=2)?"s ont été ajoutées.":"a été ajoutée."));
                 //Cas d'opération de mise à jour d'insertion ou de suppression de frais forfaitisés/hors-forfait
-            }else if(message[0].equals("deleteFraisHF") || message[0].equals("mySQLDeleteFraisForfaitisee") || message[0].equals("updateUpdateFraisForfaitTable")){
+            }else if(message[1].equals("majFrais")){
                 for(int i = 2; i<message.length; i++){
-                    Log.d("Opération Serveur MYSQL",message[i]);
+
+                    //Affichage des messages
+                    //Messages d'erreur
+                    if(message[i].contains("Erreur : ")){
+                        Log.e("Erreur : ",message[i].replace("Erreur :", ""));
+                    }
+
+                    //Message d'avertissements
+                    else if(message[i].contains("Avertissement : ")){
+                        Log.w("Avertissement", message[i].replace("Avertissement : ",""));
+                    }
+
+                    //Message d'informations
+                    else if(message[i].contains("Information : ")){
+                        Log.d("Information", message[i].replace("Information : ", ""));
+                    }
                 }
             }
 

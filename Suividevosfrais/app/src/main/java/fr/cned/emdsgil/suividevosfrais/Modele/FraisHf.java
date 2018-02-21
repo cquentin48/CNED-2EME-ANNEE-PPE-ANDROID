@@ -8,10 +8,10 @@ import java.io.Serializable;
  */
 public class FraisHf  implements Serializable {
 
-	private final Float montant ;
-	private final String motif ;
-	private final Integer jour ;
-	private final Integer mySQLKey;
+	private Float montant ;
+	private String motif ;
+	private Integer jour ;
+	private Integer mySQLKey;
 	private String modified;
 	
 	public FraisHf(Float montant, String motif, Integer jour, Integer mySQLKey) {
@@ -37,4 +37,14 @@ public class FraisHf  implements Serializable {
 	public Integer getJour() {
 		return jour;
 	}
+
+	public void setMontant(Float nveauMontant){this.montant = nveauMontant;}
+
+	public void setMotif(String nveauMotif){this.motif = nveauMotif;}
+
+	public void setMySQLKey(Integer mySQLKey){this.mySQLKey = mySQLKey;}
+
+	public Integer getMySQlKey(){return this.mySQLKey;}
+
+	public String isModified(){return this.modified;}
 }

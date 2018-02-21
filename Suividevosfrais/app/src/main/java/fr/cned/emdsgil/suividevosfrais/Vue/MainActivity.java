@@ -9,6 +9,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -18,6 +19,8 @@ import fr.cned.emdsgil.suividevosfrais.Modele.FraisHf;
 import fr.cned.emdsgil.suividevosfrais.Modele.FraisMois;
 import fr.cned.emdsgil.suividevosfrais.Outils.Serializer;
 import fr.cned.emdsgil.suividevosfrais.R;
+
+import static fr.cned.emdsgil.suividevosfrais.Controleur.Global.getListeFraisMoisMaj;
 
 public class MainActivity extends AppCompatActivity {
     private Global controle;
@@ -105,7 +108,14 @@ public class MainActivity extends AppCompatActivity {
     private void cmdTransfert_clic() {
         findViewById(R.id.cmdTransfert).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                Global.UpdateFrais(controle.getListeFraisMoisMaj());
+                //Si aucune modification n'a été effectuée
+                if(getListeFraisMoisMaj().size() == 0){
+                    Toast.makeText(MainActivity.this, "Aucune modification. Avez-vous effectué des modifications?", Toast.LENGTH_LONG);
+                }
+                //Sinon
+                else{
+                    Global.UpdateFrais(getListeFraisMoisMaj());
+                }
             }
         });
     }

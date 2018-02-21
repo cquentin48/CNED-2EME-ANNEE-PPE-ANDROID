@@ -114,16 +114,5 @@ public class FraisMois implements Serializable {
         return lesFraisHf;
     }
 
-    /**
-     * Calcul le taux total des frais du mois
-     * @return double le montant total des frais du mois
-     */
-    private double getTauxFinal(){
-        double taux = 0;
-        taux = this.etape*110+this.km*0.62+this.repas*25.00+this.nuitee*80.00;
-        for(int i = 0; i<lesFraisHf.size(); i++){
-            taux+=lesFraisHf.get(i).getMontant();
-        }
-        return taux;
-    }
+    public String isModified(){return this.modifType;}
 }
