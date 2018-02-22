@@ -218,8 +218,8 @@ public class AccesDistant implements AsyncResponse {
                 Log.d("Nombre de fiches ajoutée"+((controle.getListeFraisMois().size()>=2)?"s":""), controle.getListeFraisMois().size()+" fiche"+((controle.getListeFraisMois().size()>=2)?"s ont été ajoutées.":"a été ajoutée."));
                 //Cas d'opération de mise à jour d'insertion ou de suppression de frais forfaitisés/hors-forfait
             }else if(message[1].equals("majFrais")){
-                for(int i = 2; i<message.length; i++){
-
+                for(int i = 3; i<message.length; i++){
+                    Log.d("Retour",output);
                     //Affichage des messages
                     //Messages d'erreur
                     if(message[i].contains("Erreur : ")){

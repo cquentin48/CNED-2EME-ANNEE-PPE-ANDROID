@@ -162,6 +162,7 @@ public final class Global{
         String key = String.valueOf(annee)+((mois<10)?0:"")+String.valueOf(mois)+"";
         //Passage au format entier
         int ficheMoisKey = Integer.parseInt(key);
+        Global.getListeFraisMois().get(ficheMoisKey).setModifType("MODIFIE");
 
         //Si le frais forfaitisé fait parti d'une fiche déjà existante
         Log.d("Index fiche mois",ficheMoisKey+"");
@@ -175,10 +176,12 @@ public final class Global{
                 //On récupère le frais hors-forfait
                 FraisHf unFraisMaj = listeFraisMois.get(ficheMoisKey).getLesFraisHf().get(id);
                 Log.d("Opération", "Récupération de la fiche du mois"+mois);
+                Log.d("Opération", "Index de la fiche de mois"+ficheMoisKey);
 
                 //Maj des libellés
                 unFraisMaj.setMontant(montant);
                 unFraisMaj.setMotif(libelle);
+                unFraisMaj.setModified("MODIFIE");
 
                 //On ajoute la fiche de frais à la liste de maj
                 listeFraisMoisMaj.put(ficheMoisKey,listeFraisMois.get(ficheMoisKey));
@@ -242,12 +245,12 @@ public final class Global{
      */
     public static void updateUpdateFraisForfaitTable(int mois, String libelle, int quantite){
         //Si le frais forfaitisé fait parti d'une fiche déjà existante
-        if(listeFraisMois.containsKey(mois) == true){
+        if(listeFraisMois.containsKey(mois) == true) {
 
             //Affichage console
-            Log.d("Operation","Ajout d'un frais forfaitisé à la liste de maj");
-            Log.d("Info","Fiche déjà existante");
-            Log.d("Info","Mise à jour de la fiche du mois "+mois+".");
+            Log.d("Operation", "Ajout d'un frais forfaitisé à la liste de maj");
+            Log.d("Info", "Fiche déjà existante");
+            Log.d("Info", "Mise à jour de la fiche du mois " + mois + ".");
 
             //On met à jour le frais forfaitisé
             switch(libelle){
@@ -334,8 +337,11 @@ public final class Global{
      * @param updateTableHashTable la table de mise à jour
      */
     public static void UpdateFrais(Hashtable<Integer, FraisMois> updateTableHashTable){
-        List<FraisMois> listeMaj = new ArrayList<>();
         JSONArray updateTableJSONArray = new JSONArray();
+        //Ajout de l'identifiant utilisateur
+        updateTableJSONArray.put(Global.getCompte().getUserId());
+
+        //Parcours de la table de mise à jour
         for ( Hashtable.Entry<Integer, FraisMois> entry : updateTableHashTable.entrySet() ) {
             //Instance du tableau JSON
             JSONArray ficheFraisMoisJSONArray = new JSONArray();
@@ -355,7 +361,9 @@ public final class Global{
 
             //Ajout du cas de modification du tableau
             ficheFraisMoisJSONArray.put(value.isModified());
+            JSONArray listeFraisHFJSONArray = new JSONArray();
 
+            //Parcours des frais HF du mois
             for(Map.Entry<Integer,FraisHf> entryFraisHF : value.getLesFraisHf().entrySet()){
                 //Récupération du frais Hors-Forfait
                 FraisHf fraisHfValue = entryFraisHF.getValue();
@@ -366,15 +374,18 @@ public final class Global{
                 //Ajout des éléments montant, motif, clé mysql et jour au tableau de frais hors-forfait du mois JSONArray
                 fraisHfJSONArray.put(fraisHfValue.getMontant());
                 fraisHfJSONArray.put(fraisHfValue.getMotif());
-                fraisHfJSONArray.put(fraisHfValue.getJour());
                 fraisHfJSONArray.put(fraisHfValue.getMySQlKey());
 
                 //Ajout du cas de modification du tableau
                 fraisHfJSONArray.put(fraisHfValue.isModified());
 
                 //Ajout du tableau de frais hors-forfait du mois key au tableau JSONArray de mise à jour
-                ficheFraisMoisJSONArray.put(fraisHfJSONArray);
+                listeFraisHFJSONArray.put(fraisHfJSONArray);
             }
+            //Ajout du tableau des frais hf du mois à la fiche de frais
+            ficheFraisMoisJSONArray.put(listeFraisHFJSONArray);
+
+            //Ajout de la fiche au tableau JSON
             updateTableJSONArray.put(ficheFraisMoisJSONArray);
         }
         Log.d("Opération", "Envoi des données du tableau de mis à jour vers le serveur mysql");
