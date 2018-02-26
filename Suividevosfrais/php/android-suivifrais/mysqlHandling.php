@@ -34,6 +34,7 @@ if (isset($_POST["operation"])) {
 					echo "Echec de connection avec l'identifiant '$username' et le mdp '$mdp'.%";
 				}			
 				break;
+				
 				//chargement des frais forfaitisés
 				case "chargementFrais":
 					print("chargementFrais%");
@@ -76,6 +77,7 @@ if (isset($_POST["operation"])) {
 								if(isset($ligne2)){
 									//Copie des données dans le tableau
 									for($i = 0;$i<sizeof($ligne2);$i++){
+										//Parcours des frais forfaitisés
 										switch($ligne2[$i]['idfraisforfait']){
 											//Nuitée
 											case "ETP":
@@ -96,34 +98,59 @@ if (isset($_POST["operation"])) {
 										}
 									}
 								}
-								$req2 = $cnx->prepare('SELECT COUNT(*) as "nbFraisHF", `idvisiteur`,`mois`'
+								//requête sql d'import des frais Hors-Forfait
+								$requete = 'SELECT COUNT(*) as "nbFraisHF", `idvisiteur`,`mois`'
 													 ."FROM `lignefraishorsforfait`"
 													 ."WHERE `idvisiteur` = '$userId' AND `mois` = '$mois' AND `libelle` NOT LIKE '%REFUSE%'"
-													 ."GROUP BY `idvisiteur`,`mois`;");
+													 ."GROUP BY `idvisiteur`,`mois`;";
+								
+								//Préparation de la requête
+								$req2 = $cnx->prepare($requete);
+								
+								//Exécution de la requ
 								$req2->execute();
+								
+								//Copie du résultat dans la variable $ligne2
 								$ligne2 = $req2->fetchAll(PDO::FETCH_ASSOC);
+								
+								//En cas de présence de frais hf
 								if(isset($ligne2[0]['nbFraisHF'])){
+									//Copie du nombre de frais HF dans la fiche du mois
 									$tabFrais[$key]['nbFraisHF'] = $ligne2[0]['nbFraisHF'];
 								}
+								//Sinon
 								if(!isset($tabFrais[$key]['nbFraisHF'])){
+									//Ajout du nombre 0 dans la fiche de frais pour indiquer l'absence de frais HF
 									$tabFrais[$key]['nbFraisHF'] = 0;
 								}
 								
-								$req2 = $cnx->prepare('SELECT `id`, `libelle`, EXTRACT(DAY FROM `date`) as "jour",`montant`'
+								//Requête
+								$requete = 'SELECT `id`, `libelle`, EXTRACT(DAY FROM `date`) as "jour",`montant`'
 													."FROM `lignefraishorsforfait`"
-													."WHERE `idvisiteur` = '$userId' AND `mois` = '$mois' AND `libelle` NOT LIKE '%REFUSE%';");
+													."WHERE `idvisiteur` = '$userId' AND `mois` = '$mois' AND `libelle` NOT LIKE '%REFUSE%';";
+
+								//Préparation de la requête
+								$req2 = $cnx->prepare($requete);
+								
+								//Exécution de la requête
 								$req2->execute();
 								
+								//Copie du résultat dans la variable "ligne2"
 								$ligne2 = $req2->fetchAll(PDO::FETCH_ASSOC);
+								
+								//En cas de retour
 								if(isset($ligne2)){
+									//Ajout des frais hors-forfait à la fiche de frais du mois correspondant
 									for($i = 0;$i<sizeof($ligne2);$i++){
-										$tabFrais[$key]['id'.$i] = $ligne2[$i]['id'];
-										$tabFrais[$key]['libelle'.$i] = $ligne2[$i]['libelle'];
-										$tabFrais[$key]['jour'.$i] = $ligne2[$i]['jour'];
-										$tabFrais[$key]['montant'.$i] = $ligne2[$i]['montant'];
+										$tabFrais[$key]['id'.$i] = $ligne2[$i]['id']; //Identifiant
+										$tabFrais[$key]['libelle'.$i] = $ligne2[$i]['libelle']; //Libellé
+										$tabFrais[$key]['jour'.$i] = $ligne2[$i]['jour']; //Jour
+										$tabFrais[$key]['montant'.$i] = $ligne2[$i]['montant']; //Montant
 									}
 								}
 							}
+							
+							//Envoi de la variable du tableau de frais dans la requête SQL
 							print(json_encode($tabFrais, JSON_UNESCAPED_UNICODE));
 							print "%";
 					}else{
@@ -137,17 +164,35 @@ if (isset($_POST["operation"])) {
 						print("majFrais%");
 						print("majFrais%");
 						
-						//On récupère les données
+						//Tables de références pour les frais forfaitisés
 						$fraisForfaitIdTab = array(0 => 'ETP', 1 => 'NUI', 2 => 'KM', 3 => 'REP');
+						$fraisForfaitMontantTab = array(0 => 110, 1 => 0.62, 2 => 80, 3 => 25);
+						
+						//Récupération des données à partir de celles envoyées depuis le smartphone
 						$lesdonnees = $_REQUEST['lesdonnees'];
+						
+						//Décodage du tableau JSON
 						$updateFicheFraisTab = json_decode($lesdonnees);
+						
+						//Récupération de l'index utilisateur
 						$userId = $updateFicheFraisTab[0];
-						echo "<pre>";
-						print_r($updateFicheFraisTab);
 						
 						//Suppression du premier élément du tableau de fiche
 						unset($updateFicheFraisTab[0]);
+						
+						//Parcours des fiches de frais
 						foreach($updateFicheFraisTab as $uneFiche){
+							//Récupération du mois et de l'année de la fiche
+							$mois = $uneFiche[1];			
+							$annee = $uneFiche[0];
+							
+							//Création de la clé du mois pour la requête
+							if($mois<10){
+								$key = $annee.'0'.$mois;
+								}else{
+								$key = $annee.$mois;
+							}
+						
 							//Parcours des cas de modification
 							switch($uneFiche[6]){
 								//Cas de modification
@@ -155,13 +200,23 @@ if (isset($_POST["operation"])) {
 									for($i=0;$i<sizeof($fraisForfaitIdTab);$i++){
 										$montant = $uneFiche[$i+2];
 										$fraisForfait = $fraisForfaitIdTab[$i];
+										
+										//Requête SQL
 										$requete = "UPDATE `lignefraisforfait`"
-													 ." SET `quantite` = $montant"
-													 ." WHERE `mois` ='$uneFiche[0]$uneFiche[1]' AND `idvisiteur` = '$userId' AND `idfraisforfait` = '$fraisForfait';";
-										print($requete."%");
+												  ." SET `quantite` = $montant"
+												  ." WHERE `mois` ='$key' AND `idvisiteur` = '$userId' AND `idfraisforfait` = '$fraisForfait';";
+													 
+										//Préparation de la requête SQL
 										$req = $cnx->prepare($requete);
-										print("Information : Fiche du mois de $uneFiche[0]$uneFiche[1] mise à jour.%");
+										
+										//Exécution de la requête SQL
 										$req->execute();
+										
+										//Affichage de la requête dans la console
+										print("SQL : ".$requete."%");
+										
+										//Affichage du résultat de l'opération dans la console
+										print("Information : Fiche du mois de $key mise à jour.%");
 									}
 									
 									//S'il y a présence de frais hors-forfait dans la fiche du mois
@@ -171,29 +226,51 @@ if (isset($_POST["operation"])) {
 											switch($unFraisHF[3]){
 												//Cas de modification
 												case "MODIFIE":
+												
+													//Requête sql
 													$requete = "UPDATE `lignefraishorsforfait`"
 																 ." SET `libelle` = '$unFraisHF[1]', `montant` = $unFraisHF[0]"
-																 ." WHERE `idvisiteur` = '$userId' AND `mois` = '$uneFiche[0]$uneFiche[1]' AND `id` = $unFraisHF[2]";
+																 ." WHERE `idvisiteur` = '$userId' AND `mois` = '$key' AND `id` = $unFraisHF[2]";
+																 
+													//Préparation de la requête SQL
 													$req = $cnx->prepare($requete);
-													print ($requete."%");
+													
+													//Exécution de la requête SQL
 													$req->execute();
 													
-													print("Information : Frais Hors-Forfait du mois de $uneFiche[0]$uneFiche[1] au jour $unFraisHF[3] mis à jour.%");
+													//Affichage de la requête dans la console
+													print("SQL : ".$requete."%");
+													
+													//Affichage du résultat de l'opération dans la console
+													print("Information : Frais Hors-Forfait du mois de $key au jour $unFraisHF[3] mis à jour.%");
 												break;
 												
 												//Cas de création
 												case "CREE":
+													//Récupération de la date à partir de la fiche et du frais hors-forfait(jour)
 													$mois = $uneFiche[1];
 													$annee = $uneFiche[0];
 													$jour = $unFraisHF[3];
-													$date = $annee."-".$mois."-".$jour;
 													
-													$req = $cnx->prepare("INSERT INTO `lignefraishorsforfait`"
+													//Création de la date au format YYYY-MM-DD
+													if($mois<10){
+														$date = $annee."-"."0".$mois."-".$jour;
+													}else{
+														$date = $annee."-".$mois."-".$jour;
+													}
+													
+													$requete = "INSERT INTO `lignefraishorsforfait`"
 																 ."(`id`, `idVisiteur`, `mois`, `libelle`, `date`, `quantite`)"
-																 ."VALUES ($unFraisHF[4], $idVisiteur, $uneFiche[1], $unFraisHF[2], date, montant)");
+																 ."VALUES ($unFraisHF[4], $idVisiteur, $key, $unFraisHF[2], date, montant)";
+													
+													$req = $cnx->prepare($requete);
 													$req->execute();
 													
-													print("Information : Frais Hors-Forfait du mois de $uneFiche[0]$uneFiche[1] au jour $unFraisHF[3] inséré dans la base de donnée MYSQL.%");
+													//Affichage de la requête sql dans la console
+													echo "SQL : ".$requete."%";
+													
+													//Affichage du résultat de l'opération dans la console
+													print("Information : Frais Hors-Forfait du mois de $key au jour $unFraisHF[3] inséré dans la base de donnée MYSQL.%");
 												break;
 												
 												default:
@@ -206,51 +283,115 @@ if (isset($_POST["operation"])) {
 								
 								//Cas de création
 								case "CREE":
+								
+									//Récupération du mois et de l'année de la fiche
+									$annee = $uneFiche[0];
+									$mois = $uneFiche[1];
+									
+									//Création du montant valide pour la requête SQL
 									$montantValide = 0;
-									for($i = 0;$i<sizeof(fraisForfaitIdTab);$i++){
-										$montantValide = $fraisForfaitMontantTab[$i]*$uneFiche[$i];
+									for($i = 0;$i<sizeof($fraisForfaitIdTab);$i++){
+										$montantValide = $fraisForfaitMontantTab[$i]*$uneFiche[$i+2];
 									}
-									$req->prepare("INSERT INTO `fichefrais` (`idVisiteur`, `mois`, `nbjustificatifs`, `montantValide`, `datemodif`, `idetat`)"
-												 ."VALUES ($userId, $uneFiche[1], 0, $montantValide, NOW(), 'CR');");
+									
+									//Ecriture de la requête SQL pour la création de la fiche
+									$requete = "INSERT INTO `fichefrais` (`idVisiteur`, `mois`, `nbjustificatifs`, `montantValide`, `datemodif`, `idetat`)"
+												 ."VALUES ('$userId', '$key', 0, $montantValide, NOW(), 'CR');";
+												 
+									//Affichage de la requête pour la console
+									echo "SQL : ".$requete."%";
+									
+									//Préparation de la requête
+									$req = $cnx->prepare($requete);
+									
+									//Exécution de la requête
 									$req->execute();
+									
+									//Insertion des frais forfaitisés dans la base de données sql
 									for($i=0;$i<sizeof($fraisForfaitIdTab);$i++){
+										//Récupération du montant
 										$montant = $uneFiche[$i+2];
+										
+										//Récupération du type de frais forfaitisé
 										$fraisForfait = $fraisForfaitIdTab[$i];
+										
+										//SQL
 										$requete = "INSERT INTO `lignefraisforfait`(`idvisiteur`,`mois`,`idfraisforfait`,`quantite`)"
-													 ."VALUES('$userId','$uneFiche[1]','$fraisForfait', $quantite);";
-										print($requete);
-										$req->prepare($requete);
-										//$req->execute();
-										print("Information : Fiche du mois de $uneFiche[0]$uneFiche[1] insérée dans la base de donnée MYSQL.%");
+													 ."VALUES('$userId','$key','$fraisForfait', $montant);\n";
+										
+										//Préparation de la requête SQL
+										$req = $cnx->prepare($requete);
+										
+										//Exécution de la requête SQL
+										$req->execute();
+										
+										//Affichage de la requête dans la console
+										echo "SQL : ".$requete."%";
+										
+										//Affichage du résultat dans la console
+										print("Information : Fiche du mois de $key insérée dans la base de donnée MYSQL.%");
 									}
 									
 									//S'il y a présence de frais hors-forfait dans la fiche du mois
 									if(isset($uneFiche[7])){
 										//Parcours des frais Hors-Forfait
 										foreach($uneFiche[7] as $unFraisHF){
-											switch($unFrais[7]){
+											
+											//Parcours du type de modification du frais HF
+											switch($unFraisHF[5]){
 												//Cas de modification
 												case "MODIFIE":
-													$req->prepare("UPDATE `lignefraishorsforfait`"
-																 ."SET `libelle` = '$unFraisHF[2]', `montant` = $unFraisHF[1]");
+													//Ecriture de la requête
+													$requete = "UPDATE `lignefraishorsforfait`"
+																 ."SET `libelle` = '$unFraisHF[2]', `montant` = $unFraisHF[1]";
+																 
+													//Préparation de la requête			 
+													$req->prepare($requete);
+													
+													//Exécution de la requête
 													$req->execute();
-													print("Information : Frais Hors-Forfait du mois de $uneFiche[0]$uneFiche[1] au jour de $unFraisHF[3] mise à jour.%");
+													
+													//Affichage de la requête dans la console
+													echo "SQL : ".$requete."%";
+													
+													//Affichage du résultat de l'opération dans la console
+													print("Information : Frais Hors-Forfait du mois de $key au jour de $unFraisHF[3] mise à jour.%");
 												break;
 												
 												//Cas de création
 												case "CREE":
+												
+													//Récupération de la date à partir de la fiche et du frais hors-forfait(jour)
 													$mois = $uneFiche[1];
 													$annee = $uneFiche[0];
 													$jour = $unFraisHF[3];
-													$date = $annee."-".$mois."-".$jour;
 													
-													$req->prepare("INSERT INTO `lignefraishorsforfait`"
+													//Création de la date au format YYYY-MM-DD
+													if($mois<10){
+														$date = $annee."-"."0".$mois."-".$jour;
+													}else{
+														$date = $annee."-".$mois."-".$jour;
+													}
+													
+													//Ecriture de la requête SQL
+													$requete = "INSERT INTO `lignefraishorsforfait`"
 																 ."(`id`, `idVisiteur`, `mois`, `libelle`, `date`, `montant`)"
-																 ."VALUES ('$unFraisHF[4]', '$idVisiteur', '$uneFiche[0]$uneFiche[1]', '$unFraisHF[2]', '$date', montant)");
-													$req->execute();
-													print("Information : Frais Hors-Forfait du mois de $uneFiche[0]$uneFiche[1] au jour de $unFraisHF[3] insérée dans la base de donnée MYSQL.%");
+																 ."VALUES ('$unFraisHF[4]', '$idVisiteur', '$key', '$unFraisHF[2]', '$date', montant)";
+													
+													//Préparation de la requête SQL
+													$req = $cnx->prepare($requete);
+																 
+													//Exécution de la requête
+													$req = $cnx->execute();
+													
+													//Affichage de la requête dans la console
+													echo "SQL : ".$requete."%";
+													
+													//Affichage du résultat de l'opération dans la console
+													print("Information : Frais Hors-Forfait du mois de $key au jour de $unFraisHF[3] insérée dans la base de donnée MYSQL.%");
 												break;
 												
+												//Cas d'erreur
 												default:
 													print("Avertissement : Aucun cas de modification/création du frais hors-forfait. Passage au frais suivant.%");
 												break;
@@ -265,35 +406,62 @@ if (isset($_POST["operation"])) {
 									if(isset($uneFiche[7])){
 										//Parcours des frais Hors-Forfait
 										foreach($uneFiche[7] as $unFraisHF){
-											echo "<pre>";
-											print_r($unFraisHF);
 											switch($unFraisHF[4]){
 												//Cas de modification
 												case "MODIFIE":
-													$req = $cnx->prepare("UPDATE `lignefraishorsforfait`"
+												
+													//SQL
+													$requete = "UPDATE `lignefraishorsforfait`"
 																 ."SET `libelle` = '$unFraisHF[2]', `montant` = $unFraisHF[1]"
-																 ."WHERE `idvisiteur` = '$userId' AND `mois` = '$uneFiche[0]$uneFiche[1]'");
+																 ."WHERE `idvisiteur` = '$userId' AND `mois` = $key";
+																 
+													//Préparation de la requête SQL
+													$req = $cnx->prepare($requete);
+													
+													//Exécution de la requête SQL
 													$req->execute();
 													
-													print("Information : Frais Hors-Forfait du mois de $uneFiche[0]$uneFiche[1] au jour $unFraisHF[3] mis à jour.%");
+													//Affichage de la requête dans la console
+													echo "SQL : ".$requete."%";
+													
+													//Affichage du résultat de l'opération dans la console
+													print("Information : Frais Hors-Forfait du mois de $key au jour de $unFraisHF[3] mis à jour.%");
 												break;
 												
 												//Cas de création
 												case "CREE":
+													//Récupération de la date à partir de la fiche de frais et du frais hors-forfait correspondant
 													$mois = $uneFiche[1];
 													$annee = $uneFiche[0];
 													$jour = $unFraisHF[3];
-													$date = $annee."-".$mois."-".$jour;
 													
-													$req = $cnx->prepare("INSERT INTO `lignefraishorsforfait`"
+													//Ecriture de la date au format YYYY-MM-DD
+													if($mois<10){
+														$date = $annee."-"."0".$mois."-".$jour;
+													}else{
+														$date = $annee."-".$mois."-".$jour;
+													}
+													
+													//SQL
+													$requete = "INSERT INTO `lignefraishorsforfait`"
 																 ."(id, idVisiteur, mois, libelle, date, montant)"
-																 ."VALUES ('$unFraisHF[4]', '$idVisiteur', '$uneFiche[1]', '$unFraisHF[2]', '$date', montant)");
+																 ."VALUES ('$unFraisHF[4]', '$idVisiteur', '$key', '$unFraisHF[2]', '$date', montant)";
+													
+													//Préparation de la requête
+													$req = $cnx->prepare($requete);
+													
+													//Exécution de la requête
 													$req->execute();
 													
-													print("Information : Frais Hors-Forfait du mois de $uneFiche[0]$uneFiche[1] au jour $unFraisHF[3] inséré dans la base de donnée MYSQL.%");
+													//Affichage de la requête dans la console
+													echo "SQL : ".$requete."%";
+													
+													//Affichage du résultat de l'opération dans la console
+													print("Information : Frais Hors-Forfait du mois de $key au jour $unFraisHF[3] inséré dans la base de donnée MYSQL.%");
 												break;
 												
 												default:
+													//En cas d'absence de création/modification de la fiche => Affichage console
 													print("Avertissement : aucun cas de modification/création du frais hors-forfait. Passage au frais suivant.%");
 												break;
 											}
@@ -303,7 +471,8 @@ if (isset($_POST["operation"])) {
 							}
 						}
 					break;
-							
+						
+					//Absence d'opération
 					default:
 					break;
 		}

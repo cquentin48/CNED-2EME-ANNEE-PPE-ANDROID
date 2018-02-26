@@ -244,92 +244,31 @@ public final class Global{
      * @param quantite la nouvelle quantite
      */
     public static void updateUpdateFraisForfaitTable(int mois, String libelle, int quantite){
-        //Si le frais forfaitisé fait parti d'une fiche déjà existante
-        if(listeFraisMois.containsKey(mois) == true) {
+            Log.d("Type de modification",listeFraisMois.get(mois).isModified());
+            //Récupération de la clé et de la fiche du mois
+            FraisMois value = listeFraisMois.get(mois);
 
-            //Affichage console
-            Log.d("Operation", "Ajout d'un frais forfaitisé à la liste de maj");
-            Log.d("Info", "Fiche déjà existante");
-            Log.d("Info", "Mise à jour de la fiche du mois " + mois + ".");
+            //Récupération du type de modification
+            String modifType = value.isModified();
 
-            //On met à jour le frais forfaitisé
-            switch(libelle){
-                //Kilométrage
-                case "KM":
-                    Log.d("Info","Element de maj : kilométrage");
-                    listeFraisMois.get(mois).setEtp(quantite);
+            //Parcours des types de modifications
+            switch(modifType){
+                case "CREE":
+                    //Affichage console
+                    Log.d("Operation","Ajout d'un frais forfaitisé à la liste de maj");
+                    Log.d("Info","Fiche inexistante dans la base de donnée => Création de la fiche");
                     break;
 
-                //Forfait Etape
-                case "ETP":
-                    Log.d("Info","Element de maj : forfait étape");
-                    listeFraisMois.get(mois).setEtape(quantite);
-                    break;
+                case "MODIFIE":
 
-                //Nuitée
-                case "NUI":
-                    Log.d("Info","Element de maj : nuitée");
-                    listeFraisMois.get(mois).setNuitee(quantite);
-                    break;
-
-                //Repas
-                case "REP":
-                    Log.d("Info","Element de maj : repas de midi");
-                    listeFraisMois.get(mois).setRepas(quantite);
+                    //Affichage console
+                    Log.d("Operation", "Ajout d'un frais forfaitisé à la liste de maj");
+                    Log.d("Info", "Fiche déjà existante");
+                    Log.d("Info", "Mise à jour de la fiche du mois " + mois + ".");
                     break;
             }
-
-            //Ajout du frais dans la liste de mise à jour
-            listeFraisMoisMaj.put(mois,listeFraisMois.get(mois));
-            listeFraisMoisMaj.get(mois).setModifType("MODIFIE");
-
-        }
-        //Sinon
-        else
-        {
-            //Affichage console
-            Log.d("Operation","Ajout d'un frais forfaitisé à la liste de maj");
-            Log.d("Info","Fiche inexistante => Création de la fiche");
-            //On transforme l'integer du mois en string
-            String moisString = mois+"";
-
-            //On extrait le mois et l'année
-            int moisInt = Integer.parseInt(moisString.substring(4));
-            int anneeInt = Integer.parseInt(moisString.substring(0,3));
-
-            //On crée une fiche de mois pour l'incorporer à la liste des données
-            listeFraisMoisMaj.put(mois, new FraisMois(moisInt,anneeInt));
-            listeFraisMoisMaj.get(mois).setModifType("CREE");
-
-            //On met à jour le frais forfaitisé
-            switch(libelle){
-                case "KM":
-                    Log.d("Info","Element de maj : kilométrage");
-                    listeFraisMois.get(mois).setEtp(quantite);
-                    break;
-
-
-                case "ETP":
-                    Log.d("Info","Element de maj : forfait étape");
-                    listeFraisMois.get(mois).setEtape(quantite);
-                    break;
-
-
-                case "NUI":
-                    Log.d("Info","Element de maj : nuitée");
-                    listeFraisMois.get(mois).setNuitee(quantite);
-                    break;
-
-
-                case "REP":
-                    Log.d("Info","Element de maj : repas de midi");
-                    listeFraisMois.get(mois).setRepas(quantite);
-                    break;
-            }
-
-            //On ajoute le frais créé à la liste de mois
-            listeFraisMois.put(mois,listeFraisMoisMaj.get(mois));
-        }
+            //On ajoute le frais créé dans la mise à jour
+            listeFraisMoisMaj.put(mois,value);
     }
 
     /**

@@ -154,6 +154,9 @@ public class RepActivity extends AppCompatActivity {
         if (!Global.getListeFraisMois().containsKey(key)) {
             // creation du mois et de l'annee s'ils n'existent pas déjà
             Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
+            Global.getListeFraisMois().get(key).setModifType("CREE");
+        }else if(!(Global.getListeFraisMois().get(key).isModified() == "CREE")){
+            Global.getListeFraisMois().get(key).setModifType("MODIFIE");
         }
         Global.getListeFraisMois().get(key).setRepas(qte) ;
         controle.updateUpdateFraisForfaitTable(key,"REP",qte);

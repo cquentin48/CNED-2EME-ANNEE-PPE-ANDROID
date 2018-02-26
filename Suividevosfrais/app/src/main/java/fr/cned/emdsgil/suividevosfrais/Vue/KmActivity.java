@@ -76,6 +76,9 @@ public class KmActivity extends AppCompatActivity {
         int key = Integer.parseInt(keyText);
         if (Global.getListeFraisMois().containsKey(key)) {
             qte = Global.getListeFraisMois().get(key).getEtape() ;
+            Global.getListeFraisMois().get(key).setModifType("CREE");
+        }else if(!(Global.getListeFraisMois().get(key).isModified() == "CREE")){
+            Global.getListeFraisMois().get(key).setModifType("MODIFIE");
         }
         ((TextView)findViewById(R.id.txtKm)).setText(String.format(Locale.FRANCE, "%d", qte)) ;
         TextView txtKm = (TextView)findViewById(R.id.txtKm);

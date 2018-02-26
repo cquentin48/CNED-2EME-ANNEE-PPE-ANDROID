@@ -158,6 +158,9 @@ public class NuiActivity extends AppCompatActivity {
         if (!Global.getListeFraisMois().containsKey(key)) {
             // creation du mois et de l'annee s'ils n'existent pas déjà
             Global.getListeFraisMois().put(key, new FraisMois(annee, mois)) ;
+            Global.getListeFraisMois().get(key).setModifType("CREE");
+        }else if(!(Global.getListeFraisMois().get(key).isModified() == "CREE")){
+            Global.getListeFraisMois().get(key).setModifType("MODIFIE");
         }
         Global.getListeFraisMois().get(key).setNuitee(qte) ;
         Global.updateUpdateFraisForfaitTable(key,"NUI",qte);

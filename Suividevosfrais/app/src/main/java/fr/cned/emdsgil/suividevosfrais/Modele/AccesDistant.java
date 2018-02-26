@@ -219,7 +219,6 @@ public class AccesDistant implements AsyncResponse {
                 //Cas d'opération de mise à jour d'insertion ou de suppression de frais forfaitisés/hors-forfait
             }else if(message[1].equals("majFrais")){
                 for(int i = 3; i<message.length; i++){
-                    Log.d("Retour",output);
                     //Affichage des messages
                     //Messages d'erreur
                     if(message[i].contains("Erreur : ")){
@@ -235,10 +234,15 @@ public class AccesDistant implements AsyncResponse {
                     else if(message[i].contains("Information : ")){
                         Log.d("Information", message[i].replace("Information : ", ""));
                     }
+
+                    //Requête SQL
+                    else if(message[i].contains("SQL : ")){
+                        Log.d("Requête SQL", message[i].replace("SQL : ",""));
+                    }
                 }
             }
 
-            else if(message[0].equals("Erreur !")){
+            else if(message[1].equals("Erreur !")){
                 // retour suite à une erreur
                 Log.e("Erreur", ""+message[1]);
             }
