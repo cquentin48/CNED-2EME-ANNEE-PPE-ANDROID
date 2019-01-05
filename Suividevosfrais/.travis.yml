@@ -1,0 +1,14 @@
+language: android
+android:
+ components:
+   # Uncomment the lines below to
+   # use the latest revision of Android SDK Tools
+   - tools
+   - tools # see https://github.com/travis-ci/travis-ci/issues/6040#issuecomment-219367943)
+   # - platform-tools
+
+   # The SDK version used to compile the project
+   - android-28
+ script: ./gradlew clean build
+ before_install:
+   - chmod +x "./gradlew"
